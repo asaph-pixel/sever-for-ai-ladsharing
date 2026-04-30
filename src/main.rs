@@ -20,6 +20,11 @@ async fn main() -> std::io::Result<()> {
 
     let task_store = TaskStore::new();
     let cors_origin = std::env::var("CORS_ALLOWED_ORIGIN").unwrap_or_else(|_| "*".to_string());
+    let bind_host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let bind_port = std::env::var("PORT")
+        .ok()
+        .and_then(|value| value.parse::<u16>().ok())
+        .unwrap_or(8080);
 
     HttpServer::new(move || {
         App::new()
@@ -38,7 +43,7 @@ async fn main() -> std::io::Result<()> {
             )
             .service(Files::new("/", "static").index_file("index.html"))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind((bind_host.as_str(), bind_port))?
     .run()
     .await
 }
