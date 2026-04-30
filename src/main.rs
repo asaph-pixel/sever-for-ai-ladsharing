@@ -1,6 +1,7 @@
-use actix_cors::Cors;
 use actix_files::Files;
-use actix_web::{web, App, HttpServer};
+use actix_web::http::header;
+use actix_web::middleware::DefaultHeaders;
+use actix_web::{web, App, HttpResponse, HttpServer};
 use dotenvy::dotenv;
 
 mod models;
@@ -8,6 +9,10 @@ mod routes;
 mod services;
 
 use services::task_manager::TaskStore;
+
+async fn preflight() -> HttpResponse {
+    HttpResponse::Ok().finish()
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -17,22 +22,20 @@ async fn main() -> std::io::Result<()> {
     let cors_origin = std::env::var("CORS_ALLOWED_ORIGIN").unwrap_or_else(|_| "*".to_string());
 
     HttpServer::new(move || {
-        let cors = if cors_origin == "*" {
-            Cors::default()
-                .allow_any_origin()
-                .allow_any_method()
-                .allow_any_header()
-        } else {
-            Cors::default()
-                .allowed_origin(&cors_origin)
-                .allow_any_method()
-                .allow_any_header()
-        };
-
         App::new()
-            .wrap(cors)
+            .wrap(
+                DefaultHeaders::new()
+                    .add((header::ACCESS_CONTROL_ALLOW_ORIGIN, cors_origin.clone()))
+                    .add((header::ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, OPTIONS"))
+                    .add((header::ACCESS_CONTROL_ALLOW_HEADERS, "Content-Type, Authorization"))
+                    .add((header::ACCESS_CONTROL_MAX_AGE, "86400")),
+            )
             .app_data(web::Data::new(task_store.clone()))
             .configure(routes::ai::init_routes)
+            .route(
+                "/ai/{tail:.*}",
+                web::method(actix_web::http::Method::OPTIONS).to(preflight),
+            )
             .service(Files::new("/", "static").index_file("index.html"))
     })
     .bind(("127.0.0.1", 8080))?

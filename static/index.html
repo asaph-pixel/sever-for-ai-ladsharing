@@ -302,7 +302,6 @@
       feedback.className = "submit-feedback pending";
 
       try {
-        const res = await fetch("/ai/start", {
         const res = await fetch(apiUrl("/ai/start"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
