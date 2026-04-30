@@ -204,6 +204,12 @@ body {
   color: var(--accent);
 }
 
+.btn-primary:disabled,
+.btn-ghost:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
 /* FEEDBACK */
 .submit-feedback {
   font-size: 0.78rem;
@@ -212,6 +218,65 @@ body {
 .submit-feedback.error { color: var(--error); }
 .submit-feedback.success { color: var(--success); }
 .submit-feedback.pending { color: var(--text-3); }
+
+.summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  color: var(--text-2);
+}
+
+.summary-strip span,
+.task-priority {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #f0ede6;
+}
+
+.local-test-row,
+.metric-grid,
+.adaptive-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+}
+
+.adaptive-note {
+  font-size: 0.75rem;
+  color: var(--text-2);
+  background: #f6f2ea;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+}
+
+.metric-tile,
+.adaptive-panel {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem;
+}
+
+.metric-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.metric-tile strong,
+.adaptive-row strong {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.metric-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
 
 /* TASK LIST */
 .task-list {
@@ -254,6 +319,23 @@ body {
 
 .task-type-tag.encode { background: #fef3e2; color: #9a6010; }
 .task-type-tag.infer  { background: #e8f0fe; color: #2d5ab3; }
+.task-type-tag.local  { background: #e8f7f0; color: #1d7a53; }
+.task-priority {
+  font-size: 0.65rem;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.task-mode {
+  font-size: 0.65rem;
+  color: #245b8f;
+  background: #ebf3fb;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 
 .task-bar-wrap {
   height: 4px;
@@ -404,6 +486,15 @@ body {
   color: var(--text-3);
 }
 
+.empty-state {
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  color: var(--text-3);
+  font-size: 0.78rem;
+  background: var(--bg);
+}
+
 /* ANIMATIONS */
 .fade-in {
   opacity: 0;
@@ -420,4 +511,5 @@ body {
 @media (max-width: 768px) {
   .grid { grid-template-columns: 1fr; padding: 1rem; }
   .topbar { padding: 0.9rem 1rem; }
+  .local-test-row, .metric-grid, .adaptive-row { grid-template-columns: 1fr; }
 }
