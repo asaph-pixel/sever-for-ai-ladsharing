@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: sever-for-ai-ladsharing
+    runtime: rust
+    plan: free
+    buildCommand: cargo build --release --bin zephost
+    startCommand: ./target/release/zephost
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: CORS_ALLOWED_ORIGIN
+        value: "*"
