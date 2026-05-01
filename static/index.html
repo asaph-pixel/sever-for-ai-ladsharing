@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zephost Control Center</title>
+  <title>Zephost Beta Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
   <script src="config.js"></script>
@@ -13,115 +13,73 @@
     <div class="brand">
       <span class="brand-dot"></span>
       <span class="brand-name">Zephost</span>
-      <span class="brand-sub">/ compute orchestration</span>
+      <span class="brand-sub">/ 4-user beta</span>
     </div>
     <div class="topbar-right">
-      <span class="status-pill live" id="system-pill">zephost online</span>
+      <span class="status-pill live" id="system-pill">checking backend</span>
       <span class="time" id="clock"></span>
     </div>
   </header>
 
   <main class="grid">
     <section class="card fade-in" style="--delay:0.05s">
-      <div class="card-label">01 - Dispatch Workload</div>
-      <h2 class="card-title">New Zephost Task</h2>
+      <div class="card-label">01 - Create Task</div>
+      <h2 class="card-title">Queue Work</h2>
+
+      <div class="field">
+        <label for="user-id">User ID</label>
+        <input type="text" id="user-id" value="beta-user-1">
+      </div>
 
       <div class="field">
         <label for="task-type">Task Type</label>
         <select id="task-type">
           <option value="render">Render</option>
           <option value="encode">Encode</option>
-          <option value="inference">AI Inference</option>
+          <option value="inference">Inference</option>
           <option value="compress">Compress</option>
         </select>
       </div>
 
       <div class="field">
-        <label for="priority">Priority</label>
-        <select id="priority">
-          <option value="low">Low</option>
-          <option value="high">High</option>
-          <option value="enterprise">Enterprise</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="execution-mode">Execution Mode</label>
-        <select id="execution-mode">
-          <option value="cloud">Cloud</option>
-          <option value="local">Local</option>
-          <option value="hybrid">Hybrid</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="input-files">Input Files <span class="hint">(comma separated paths or URLs)</span></label>
-        <input type="text" id="input-files" placeholder="e.g. /data/file1.enc, /data/file2.enc">
-      </div>
-
-      <div class="field">
-        <label for="parameters">Parameters</label>
-        <textarea id="parameters" rows="3" placeholder='e.g. {"quality":"high","format":"mp4"}'></textarea>
+        <label for="payload">Payload JSON</label>
+        <textarea id="payload" rows="5">{"input":"sample-file.mp4","quality":"beta"}</textarea>
       </div>
 
       <button class="btn-primary" id="submit-button" onclick="submitTask()">
-        <span>Launch on Zephost</span>
+        <span>Create Task</span>
       </button>
-      <div class="local-test-row">
-        <div class="field">
-          <label for="dataset-size">Local Test Dataset (MB)</label>
-          <input type="number" id="dataset-size" min="128" step="128" value="512">
-        </div>
-        <div class="field">
-          <label for="iterations">Iterations</label>
-          <input type="number" id="iterations" min="1" step="1" value="3">
-        </div>
-      </div>
-      <button class="btn-ghost" id="local-test-button" onclick="runLocalTest()">Run Local Compute Test</button>
-      <div class="adaptive-note" id="adaptive-note">Adaptive profile will appear after the first refresh.</div>
       <div class="submit-feedback" id="submit-feedback"></div>
     </section>
 
     <section class="card fade-in" style="--delay:0.15s">
-      <div class="card-label">02 - Live Status</div>
-      <h2 class="card-title">Fleet Activity</h2>
+      <div class="card-label">02 - Queue Status</div>
+      <h2 class="card-title">System Stats</h2>
       <div class="summary-strip" id="summary-strip">
-        <span>Total: 0</span>
         <span>Queued: 0</span>
         <span>Running: 0</span>
         <span>Completed: 0</span>
       </div>
       <div class="metric-grid" id="metric-grid">
-        <div class="metric-tile"><span class="metric-label">Online Users</span><strong>0</strong></div>
-        <div class="metric-tile"><span class="metric-label">Active Nodes</span><strong>0</strong></div>
-        <div class="metric-tile"><span class="metric-label">Local Tests</span><strong>0</strong></div>
-        <div class="metric-tile"><span class="metric-label">Compute Units</span><strong>0</strong></div>
+        <div class="metric-tile"><span class="metric-label">Active Users</span><strong>0 / 4</strong></div>
+        <div class="metric-tile"><span class="metric-label">Total Tasks</span><strong>0</strong></div>
       </div>
-      <div class="adaptive-panel" id="adaptive-panel">
-        <div class="empty-state">Adaptive parameters will appear here.</div>
-      </div>
-      <div class="task-list" id="task-list">
-        <div class="empty-state">No active tasks yet.</div>
-      </div>
-      <button class="btn-ghost" onclick="refreshDashboard()">Refresh Fleet</button>
+      <button class="btn-ghost" onclick="refreshDashboard()">Refresh</button>
     </section>
 
     <section class="card fade-in" style="--delay:0.25s">
-      <div class="card-label">03 - Zephost Fleet</div>
-      <h2 class="card-title">Compute Grid</h2>
-      <div class="node-grid" id="node-grid"></div>
-      <div class="node-legend">
-        <span><i class="dot dot--online"></i> Online</span>
-        <span><i class="dot dot--busy"></i> Busy</span>
-        <span><i class="dot dot--offline"></i> Offline</span>
+      <div class="card-label">03 - Tasks</div>
+      <h2 class="card-title">Live Queue</h2>
+      <div class="task-list" id="task-list">
+        <div class="empty-state">No tasks yet.</div>
       </div>
     </section>
 
     <section class="card fade-in" style="--delay:0.35s">
       <div class="card-label">04 - Results</div>
-      <h2 class="card-title">Output Viewer</h2>
+      <h2 class="card-title">Worker Output</h2>
       <div class="result-list" id="result-list">
-        <div class="empty-state">Completed outputs will appear here.</div>
+        <div class="empty-state">Completed results will appear here.</div>
       </div>
     </section>
   </main>
@@ -129,8 +87,7 @@
   <script>
     const API_BASE_URL = (
       window.ZEPHOST_API_BASE_URL ||
-      document.querySelector('meta[name="zephost-api-base-url"]')?.content ||
-      ""
+      "https://sever-for-ai-ladsharing.onrender.com"
     ).replace(/\/$/, "");
 
     function apiUrl(path) {
@@ -143,89 +100,45 @@
         now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     }
 
-    function createNodeGrid(summary = null) {
-      const grid = document.getElementById("node-grid");
-      grid.innerHTML = "";
-      const totalNodes = summary?.total_nodes ?? 24;
-      const onlineNodes = summary?.online_nodes ?? 20;
-      const activeNodes = summary?.active_nodes ?? 6;
-
-      Array.from({ length: totalNodes }).forEach((_, index) => {
-        const state = index < activeNodes ? "busy" : index < onlineNodes ? "online" : "offline";
-        const el = document.createElement("div");
-        el.className = `node-cell node--${state}`;
-        el.title = `Zephost Node ${String(index + 1).padStart(2, "0")} - ${state}`;
-        el.innerHTML = `<span>${String(index + 1).padStart(2, "0")}</span>`;
-        grid.appendChild(el);
-      });
-    }
-
     function formatStatus(status) {
       return status.charAt(0).toUpperCase() + status.slice(1);
     }
 
-    function typeClass(taskType) {
-      if (taskType === "inference") return "infer";
-      if (taskType === "local_test") return "local";
-      return taskType;
-    }
-
     function renderSummary(summary) {
       document.getElementById("summary-strip").innerHTML = `
-        <span>Total: ${summary.total_tasks}</span>
-        <span>Queued: ${summary.queued_tasks}</span>
-        <span>Running: ${summary.running_tasks}</span>
-        <span>Completed: ${summary.completed_tasks}</span>
+        <span>Queued: ${summary.queued}</span>
+        <span>Running: ${summary.running}</span>
+        <span>Completed: ${summary.completed}</span>
       `;
 
       document.getElementById("metric-grid").innerHTML = `
-        <div class="metric-tile"><span class="metric-label">Online Users</span><strong>${summary.online_users}</strong></div>
-        <div class="metric-tile"><span class="metric-label">Active Nodes</span><strong>${summary.active_nodes} / ${summary.total_nodes}</strong></div>
-        <div class="metric-tile"><span class="metric-label">Local Tests</span><strong>${summary.local_test_runs}</strong></div>
-        <div class="metric-tile"><span class="metric-label">Compute Units</span><strong>${summary.total_compute_units}</strong></div>
+        <div class="metric-tile"><span class="metric-label">Active Users</span><strong>${summary.active_users} / ${summary.beta_user_limit}</strong></div>
+        <div class="metric-tile"><span class="metric-label">Total Tasks</span><strong>${summary.total_tasks}</strong></div>
       `;
 
-      document.getElementById("adaptive-panel").innerHTML = `
-        <div class="adaptive-row">
-          <div><span class="metric-label">Recommended Priority</span><strong>${summary.adaptive_parameters.recommended_priority}</strong></div>
-          <div><span class="metric-label">Parallel Jobs</span><strong>${summary.adaptive_parameters.recommended_parallel_jobs}</strong></div>
-          <div><span class="metric-label">Batch Size</span><strong>${summary.adaptive_parameters.recommended_batch_size}</strong></div>
-          <div><span class="metric-label">Preferred Mode</span><strong>${summary.adaptive_parameters.preferred_execution_mode}</strong></div>
-          <div><span class="metric-label">Total Cost</span><strong>$${summary.total_estimated_cost.toFixed(2)}</strong></div>
-        </div>
-      `;
-
-      document.getElementById("adaptive-note").textContent =
-        `Adaptive suggestion: use ${summary.adaptive_parameters.preferred_execution_mode} mode with batch size ${summary.adaptive_parameters.recommended_batch_size} while ${summary.online_users} users are online.`;
-
-      const pill = document.getElementById("system-pill");
-      pill.textContent = summary.running_tasks > 0 ? "zephost online / active jobs" : "zephost online";
-      createNodeGrid(summary);
+      document.getElementById("system-pill").textContent =
+        summary.running > 0 ? "worker processing" : "zephost online";
     }
 
     function renderTasks(tasks) {
-      const activeTasks = tasks.filter(task => task.status !== "completed");
       const taskList = document.getElementById("task-list");
+      const activeTasks = tasks.filter(task => task.status !== "completed");
 
       if (!activeTasks.length) {
-        taskList.innerHTML = '<div class="empty-state">No active tasks yet.</div>';
+        taskList.innerHTML = '<div class="empty-state">No queued or running tasks.</div>';
         return;
       }
 
       taskList.innerHTML = activeTasks.map(task => `
         <div class="task-item">
           <div class="task-meta">
-            <span class="task-id">#${task.task_id}</span>
-            <span class="task-type-tag ${typeClass(task.task_type)}">${task.task_type}</span>
-            <span class="task-priority">${task.priority}</span>
-            <span class="task-mode">${task.execution_mode}</span>
-          </div>
-          <div class="task-bar-wrap">
-            <div class="task-bar" style="width:${task.progress_pct}%"></div>
+            <span class="task-id">#${task.id}</span>
+            <span class="task-type-tag ${task.task_type}">${task.task_type}</span>
+            <span class="task-priority">${task.user_id}</span>
           </div>
           <div class="task-footer">
-            <span class="task-node">${task.route.node_label}</span>
-            <span class="task-pct">${task.progress_pct}% / ${formatStatus(task.status)}</span>
+            <span class="task-node">${JSON.stringify(task.payload)}</span>
+            <span class="task-pct">${formatStatus(task.status)}</span>
           </div>
         </div>
       `).join("");
@@ -236,20 +149,18 @@
       const resultList = document.getElementById("result-list");
 
       if (!completedTasks.length) {
-        resultList.innerHTML = '<div class="empty-state">Completed outputs will appear here.</div>';
+        resultList.innerHTML = '<div class="empty-state">Completed results will appear here.</div>';
         return;
       }
 
       resultList.innerHTML = completedTasks.map(task => `
         <div class="result-item">
           <div class="result-header">
-            <span class="result-id">#${task.task_id}</span>
+            <span class="result-id">#${task.id}</span>
             <span class="result-badge success">Complete</span>
           </div>
-          <div class="result-files">
-            ${task.output_files.map(file => `<span class="file-tag">${file}</span>`).join("")}
-          </div>
-          <div class="result-time">${task.route.node_label} / ${task.route.node_type} / ${task.execution_mode} / $${task.route.estimated_cost.toFixed(2)}</div>
+          <div class="result-time">${task.user_id} / ${task.task_type}</div>
+          <pre class="empty-state">${JSON.stringify(task.result, null, 2)}</pre>
         </div>
       `).join("");
     }
@@ -259,8 +170,8 @@
 
       try {
         const [summaryRes, tasksRes] = await Promise.all([
-          fetch(apiUrl("/ai/status")),
-          fetch(apiUrl("/ai/tasks"))
+          fetch(apiUrl("/status")),
+          fetch(apiUrl("/tasks"))
         ]);
 
         if (!summaryRes.ok || !tasksRes.ok) {
@@ -274,99 +185,50 @@
         renderTasks(tasks);
         renderResults(tasks);
       } catch (error) {
-        feedback.textContent = "Could not refresh Zephost dashboard.";
+        feedback.textContent = "Could not reach the Zephost backend.";
         feedback.className = "submit-feedback error";
+        document.getElementById("system-pill").textContent = "backend waking";
       }
     }
 
     async function submitTask() {
       const feedback = document.getElementById("submit-feedback");
       const button = document.getElementById("submit-button");
-      const taskType = document.getElementById("task-type").value;
-      const priority = document.getElementById("priority").value;
-      const executionMode = document.getElementById("execution-mode").value;
-      const inputFiles = document.getElementById("input-files").value
-        .split(",")
-        .map(item => item.trim())
-        .filter(Boolean);
-      const parameters = document.getElementById("parameters").value.trim();
+      let payload;
 
-      if (!inputFiles.length) {
-        feedback.textContent = "Please enter at least one input file.";
+      try {
+        payload = JSON.parse(document.getElementById("payload").value || "{}");
+      } catch {
+        feedback.textContent = "Payload must be valid JSON.";
         feedback.className = "submit-feedback error";
         return;
       }
 
       button.disabled = true;
-      feedback.textContent = "Dispatching to Zephost...";
+      feedback.textContent = "Creating task...";
       feedback.className = "submit-feedback pending";
 
       try {
-        const res = await fetch(apiUrl("/ai/start"), {
+        const res = await fetch(apiUrl("/task"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            task_type: taskType,
-            input_files: inputFiles,
-            parameters,
-            priority,
-            execution_mode: executionMode
+            user_id: document.getElementById("user-id").value,
+            task_type: document.getElementById("task-type").value,
+            payload
           })
         });
 
+        const body = await res.json();
         if (!res.ok) {
-          const message = await res.text();
-          throw new Error(message);
+          throw new Error(body.error || "Could not create task.");
         }
 
-        const task = await res.json();
-        feedback.textContent = `Task #${task.task_id} queued on ${task.route.node_label}.`;
+        feedback.textContent = `Task #${body.id} queued.`;
         feedback.className = "submit-feedback success";
-
-        document.getElementById("input-files").value = "";
-        document.getElementById("parameters").value = "";
-
         await refreshDashboard();
       } catch (error) {
-        feedback.textContent = error.message || "Could not reach the Zephost server.";
-        feedback.className = "submit-feedback error";
-      } finally {
-        button.disabled = false;
-      }
-    }
-
-    async function runLocalTest() {
-      const feedback = document.getElementById("submit-feedback");
-      const button = document.getElementById("local-test-button");
-      const datasetSize = Number(document.getElementById("dataset-size").value);
-      const iterations = Number(document.getElementById("iterations").value);
-
-      button.disabled = true;
-      feedback.textContent = "Starting local compute test...";
-      feedback.className = "submit-feedback pending";
-
-      try {
-        const res = await fetch(apiUrl("/ai/test/local"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            dataset_size_mb: datasetSize,
-            iterations
-          })
-        });
-
-        if (!res.ok) {
-          const message = await res.text();
-          throw new Error(message);
-        }
-
-        const task = await res.json();
-        feedback.textContent = `Local test #${task.task_id} started on ${task.route.node_label}.`;
-        feedback.className = "submit-feedback success";
-        document.getElementById("execution-mode").value = "local";
-        await refreshDashboard();
-      } catch (error) {
-        feedback.textContent = error.message || "Could not start the local compute test.";
+        feedback.textContent = error.message || "Could not create task.";
         feedback.className = "submit-feedback error";
       } finally {
         button.disabled = false;
@@ -375,7 +237,6 @@
 
     updateClock();
     setInterval(updateClock, 1000);
-    createNodeGrid();
     refreshDashboard();
     setInterval(refreshDashboard, 3000);
   </script>

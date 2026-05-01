@@ -1,7 +1,6 @@
-use actix_files::Files;
 use actix_web::http::header;
 use actix_web::middleware::DefaultHeaders;
-use actix_web::{web, App, HttpResponse, HttpServer};
+use actix_web::{error, web, App, HttpResponse, HttpServer};
 use dotenvy::dotenv;
 
 mod models;
@@ -11,7 +10,32 @@ mod services;
 use services::task_manager::TaskStore;
 
 async fn preflight() -> HttpResponse {
-    HttpResponse::Ok().finish()
+    HttpResponse::Ok().json(serde_json::json!({ "ok": true }))
+}
+
+async fn health() -> HttpResponse {
+    HttpResponse::Ok().json(serde_json::json!({
+        "service": "zephost",
+        "status": "ok"
+    }))
+}
+
+fn json_config() -> web::JsonConfig {
+    web::JsonConfig::default().error_handler(|err, _req| {
+        error::InternalError::from_response(
+            err,
+            HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "request body must be valid JSON"
+            })),
+        )
+        .into()
+    })
+}
+
+async fn not_found() -> HttpResponse {
+    HttpResponse::NotFound().json(serde_json::json!({
+        "error": "route not found"
+    }))
 }
 
 #[actix_web::main]
@@ -32,16 +56,21 @@ async fn main() -> std::io::Result<()> {
                 DefaultHeaders::new()
                     .add((header::ACCESS_CONTROL_ALLOW_ORIGIN, cors_origin.clone()))
                     .add((header::ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, OPTIONS"))
-                    .add((header::ACCESS_CONTROL_ALLOW_HEADERS, "Content-Type, Authorization"))
+                    .add((
+                        header::ACCESS_CONTROL_ALLOW_HEADERS,
+                        "Content-Type, Authorization",
+                    ))
                     .add((header::ACCESS_CONTROL_MAX_AGE, "86400")),
             )
             .app_data(web::Data::new(task_store.clone()))
-            .configure(routes::ai::init_routes)
+            .app_data(json_config())
+            .configure(routes::api::init_routes)
+            .route("/", web::get().to(health))
             .route(
-                "/ai/{tail:.*}",
+                "/{tail:.*}",
                 web::method(actix_web::http::Method::OPTIONS).to(preflight),
             )
-            .service(Files::new("/", "static").index_file("index.html"))
+            .default_service(web::route().to(not_found))
     })
     .bind((bind_host.as_str(), bind_port))?
     .run()
