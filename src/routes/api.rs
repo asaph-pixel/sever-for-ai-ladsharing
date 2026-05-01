@@ -1,12 +1,15 @@
 use actix_web::{get, post, web, HttpResponse, Responder};
 
-use crate::models::tasks::{ApiError, CreateTaskRequest, FetchTaskResponse, SubmitResultRequest};
+use crate::models::tasks::{
+    ApiError, CreateTaskRequest, FetchTaskResponse, HeartbeatRequest, SubmitResultRequest,
+};
 use crate::services::task_manager::TaskStore;
 
 pub fn init_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(create_task)
         .service(fetch_task)
         .service(submit_result)
+        .service(heartbeat)
         .service(status)
         .service(list_tasks);
 }
@@ -37,6 +40,17 @@ async fn submit_result(
     match task_store.submit_result(request.into_inner()).await {
         Ok(task) => HttpResponse::Ok().json(task),
         Err(error) => HttpResponse::NotFound().json(ApiError { error }),
+    }
+}
+
+#[post("/heartbeat")]
+async fn heartbeat(
+    task_store: web::Data<TaskStore>,
+    request: web::Json<HeartbeatRequest>,
+) -> impl Responder {
+    match task_store.heartbeat(request.into_inner()).await {
+        Ok(summary) => HttpResponse::Ok().json(summary),
+        Err(error) => HttpResponse::TooManyRequests().json(ApiError { error }),
     }
 }
 

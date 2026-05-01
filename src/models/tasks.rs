@@ -22,6 +22,11 @@ pub struct SubmitResultRequest {
     pub result: Value,
 }
 
+#[derive(Clone, Deserialize)]
+pub struct HeartbeatRequest {
+    pub session_id: String,
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Task {
     pub id: u64,

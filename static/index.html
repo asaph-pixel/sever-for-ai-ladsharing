@@ -100,6 +100,18 @@
       return `${API_BASE_URL}${path}`;
     }
 
+    function getSessionId() {
+      const key = "zephost_session_id";
+      let sessionId = localStorage.getItem(key);
+
+      if (!sessionId) {
+        sessionId = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+        localStorage.setItem(key, sessionId);
+      }
+
+      return sessionId;
+    }
+
     function updateClock() {
       const now = new Date();
       document.getElementById("clock").textContent =
@@ -225,6 +237,27 @@
       }
     }
 
+    async function sendHeartbeat() {
+      try {
+        const res = await fetch(apiUrl("/heartbeat"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: getSessionId() })
+        });
+
+        const summary = await res.json();
+        if (!res.ok) {
+          throw new Error(summary.error || "Beta session limit reached.");
+        }
+
+        renderSummary(summary);
+      } catch (error) {
+        document.getElementById("system-pill").textContent = "session waiting";
+        document.getElementById("backend-line").textContent =
+          error.message || "Backend: session heartbeat failed";
+      }
+    }
+
     async function submitTask() {
       const feedback = document.getElementById("submit-feedback");
       const button = document.getElementById("submit-button");
@@ -271,7 +304,9 @@
 
     updateClock();
     setInterval(updateClock, 1000);
+    sendHeartbeat();
     refreshDashboard();
+    setInterval(sendHeartbeat, 10000);
     setInterval(refreshDashboard, 3000);
   </script>
 </body>

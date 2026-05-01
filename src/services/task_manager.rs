@@ -7,10 +7,11 @@ use serde_json::json;
 use tokio::sync::Mutex;
 
 use crate::models::tasks::{
-    CreateTaskRequest, StatusResponse, SubmitResultRequest, Task, TaskStatus,
+    CreateTaskRequest, HeartbeatRequest, StatusResponse, SubmitResultRequest, Task, TaskStatus,
 };
 
 const BETA_USER_LIMIT: usize = 4;
+const SESSION_TTL_MS: u128 = 30_000;
 
 #[derive(Clone)]
 pub struct TaskStore {
@@ -22,6 +23,7 @@ pub struct TaskStore {
 struct TaskState {
     queue: VecDeque<u64>,
     tasks: HashMap<u64, Task>,
+    sessions: HashMap<String, u128>,
 }
 
 impl TaskStore {
@@ -62,6 +64,25 @@ impl TaskStore {
         Ok(task)
     }
 
+    pub async fn heartbeat(&self, request: HeartbeatRequest) -> Result<StatusResponse, String> {
+        let session_id = request.session_id.trim();
+        if session_id.is_empty() {
+            return Err("session_id is required".to_string());
+        }
+
+        let mut state = self.state.lock().await;
+        state.prune_sessions();
+
+        if !state.sessions.contains_key(session_id) && state.sessions.len() >= BETA_USER_LIMIT {
+            return Err(format!(
+                "beta limit reached: only {BETA_USER_LIMIT} active dashboard sessions are allowed"
+            ));
+        }
+
+        state.sessions.insert(session_id.to_string(), now_ms());
+        Ok(state.status_response())
+    }
+
     pub async fn fetch_next_task(&self) -> Option<Task> {
         let mut state = self.state.lock().await;
 
@@ -92,15 +113,9 @@ impl TaskStore {
     }
 
     pub async fn status(&self) -> StatusResponse {
-        let state = self.state.lock().await;
-        StatusResponse {
-            queued: state.count_status(TaskStatus::Queued),
-            running: state.count_status(TaskStatus::Running),
-            completed: state.count_status(TaskStatus::Completed),
-            active_users: state.active_users().len(),
-            beta_user_limit: BETA_USER_LIMIT,
-            total_tasks: state.tasks.len(),
-        }
+        let mut state = self.state.lock().await;
+        state.prune_sessions();
+        state.status_response()
     }
 
     pub async fn list_tasks(&self) -> Vec<Task> {
@@ -130,6 +145,23 @@ impl TaskState {
             .values()
             .filter(|task| task.status == status)
             .count()
+    }
+
+    fn prune_sessions(&mut self) {
+        let cutoff = now_ms().saturating_sub(SESSION_TTL_MS);
+        self.sessions
+            .retain(|_, last_seen_ms| *last_seen_ms >= cutoff);
+    }
+
+    fn status_response(&self) -> StatusResponse {
+        StatusResponse {
+            queued: self.count_status(TaskStatus::Queued),
+            running: self.count_status(TaskStatus::Running),
+            completed: self.count_status(TaskStatus::Completed),
+            active_users: self.sessions.len(),
+            beta_user_limit: BETA_USER_LIMIT,
+            total_tasks: self.tasks.len(),
+        }
     }
 }
 
