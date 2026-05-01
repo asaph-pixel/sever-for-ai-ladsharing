@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tokio::time::sleep;
 
-const DEFAULT_API_BASE_URL: &str = "https://sever-for-ai-ladsharing.onrender.com";
+const DEFAULT_API_BASE_URL: &str = "https://sever-for-ai-ladsharing-1.onrender.com";
 
 #[derive(Debug, Deserialize)]
 struct FetchTaskResponse {

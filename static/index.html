@@ -45,6 +45,11 @@
         <label for="payload">Payload JSON</label>
         <textarea id="payload" rows="5">{"input":"sample-file.mp4","quality":"beta"}</textarea>
       </div>
+      <div class="quick-actions" aria-label="Sample task payloads">
+        <button class="chip-button" type="button" onclick="useSamplePayload('render')">Render sample</button>
+        <button class="chip-button" type="button" onclick="useSamplePayload('inference')">Inference sample</button>
+        <button class="chip-button" type="button" onclick="useSamplePayload('compress')">Compress sample</button>
+      </div>
 
       <button class="btn-primary" id="submit-button" onclick="submitTask()">
         <span>Create Task</span>
@@ -56,15 +61,16 @@
       <div class="card-label">02 - Queue Status</div>
       <h2 class="card-title">System Stats</h2>
       <div class="summary-strip" id="summary-strip">
-        <span>Queued: 0</span>
-        <span>Running: 0</span>
-        <span>Completed: 0</span>
+        <span>Queued: syncing</span>
+        <span>Running: syncing</span>
+        <span>Completed: syncing</span>
       </div>
       <div class="metric-grid" id="metric-grid">
-        <div class="metric-tile"><span class="metric-label">Active Users</span><strong>0 / 4</strong></div>
-        <div class="metric-tile"><span class="metric-label">Total Tasks</span><strong>0</strong></div>
+        <div class="metric-tile"><span class="metric-label">Active Users</span><strong>checking</strong></div>
+        <div class="metric-tile"><span class="metric-label">Total Tasks</span><strong>waiting</strong></div>
       </div>
-      <button class="btn-ghost" onclick="refreshDashboard()">Refresh</button>
+      <div class="backend-line" id="backend-line">Backend: connecting to Render</div>
+      <button class="btn-ghost" id="refresh-button" onclick="refreshDashboard()">Refresh</button>
     </section>
 
     <section class="card fade-in" style="--delay:0.25s">
@@ -100,24 +106,43 @@
         now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     }
 
+    const samplePayloads = {
+      render: { input: "sample-file.mp4", quality: "beta", frames: 120 },
+      inference: { input: "sample-image.png", model: "vision-beta", batch: 1 },
+      compress: { input: "archive-folder", format: "zip", level: "balanced" }
+    };
+
     function formatStatus(status) {
       return status.charAt(0).toUpperCase() + status.slice(1);
     }
 
+    function displayCount(value, emptyLabel = "none") {
+      return Number(value) > 0 ? value : emptyLabel;
+    }
+
+    function useSamplePayload(type) {
+      document.getElementById("task-type").value = type;
+      document.getElementById("payload").value = JSON.stringify(samplePayloads[type], null, 2);
+      document.getElementById("submit-feedback").textContent = `${formatStatus(type)} sample loaded.`;
+      document.getElementById("submit-feedback").className = "submit-feedback pending";
+    }
+
     function renderSummary(summary) {
       document.getElementById("summary-strip").innerHTML = `
-        <span>Queued: ${summary.queued}</span>
-        <span>Running: ${summary.running}</span>
-        <span>Completed: ${summary.completed}</span>
+        <span>Queued: ${displayCount(summary.queued)}</span>
+        <span>Running: ${displayCount(summary.running, "idle")}</span>
+        <span>Completed: ${displayCount(summary.completed)}</span>
       `;
 
       document.getElementById("metric-grid").innerHTML = `
-        <div class="metric-tile"><span class="metric-label">Active Users</span><strong>${summary.active_users} / ${summary.beta_user_limit}</strong></div>
-        <div class="metric-tile"><span class="metric-label">Total Tasks</span><strong>${summary.total_tasks}</strong></div>
+        <div class="metric-tile"><span class="metric-label">Active Users</span><strong>${summary.active_users > 0 ? `${summary.active_users} / ${summary.beta_user_limit}` : `ready for ${summary.beta_user_limit}`}</strong></div>
+        <div class="metric-tile"><span class="metric-label">Total Tasks</span><strong>${displayCount(summary.total_tasks, "none yet")}</strong></div>
       `;
 
       document.getElementById("system-pill").textContent =
         summary.running > 0 ? "worker processing" : "zephost online";
+      document.getElementById("backend-line").textContent =
+        `Backend: connected to ${API_BASE_URL.replace("https://", "")}`;
     }
 
     function renderTasks(tasks) {
@@ -167,6 +192,11 @@
 
     async function refreshDashboard() {
       const feedback = document.getElementById("submit-feedback");
+      const refreshButton = document.getElementById("refresh-button");
+
+      refreshButton.disabled = true;
+      refreshButton.textContent = "Refreshing...";
+      document.getElementById("backend-line").textContent = "Backend: syncing latest state";
 
       try {
         const [summaryRes, tasksRes] = await Promise.all([
@@ -188,6 +218,10 @@
         feedback.textContent = "Could not reach the Zephost backend.";
         feedback.className = "submit-feedback error";
         document.getElementById("system-pill").textContent = "backend waking";
+        document.getElementById("backend-line").textContent = "Backend: Render may be waking from cold start";
+      } finally {
+        refreshButton.disabled = false;
+        refreshButton.textContent = "Refresh";
       }
     }
 

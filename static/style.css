@@ -186,6 +186,30 @@ body {
 
 .btn-primary:hover { opacity: 0.82; }
 
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.chip-button {
+  border: 1px solid var(--border);
+  background: #f8f7f3;
+  color: var(--text-2);
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, transform 0.15s;
+}
+
+.chip-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
 .btn-ghost {
   background: none;
   border: 1px solid var(--border);
@@ -218,6 +242,16 @@ body {
 .submit-feedback.error { color: var(--error); }
 .submit-feedback.success { color: var(--success); }
 .submit-feedback.pending { color: var(--text-3); }
+
+.backend-line {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 8px;
+  color: var(--text-2);
+  font-size: 0.72rem;
+  padding: 0.65rem 0.75rem;
+  overflow-wrap: anywhere;
+}
 
 .summary-strip {
   display: flex;
@@ -318,8 +352,10 @@ body {
 }
 
 .task-type-tag.encode { background: #fef3e2; color: #9a6010; }
-.task-type-tag.infer  { background: #e8f0fe; color: #2d5ab3; }
+.task-type-tag.infer,
+.task-type-tag.inference  { background: #e8f0fe; color: #2d5ab3; }
 .task-type-tag.local  { background: #e8f7f0; color: #1d7a53; }
+.task-type-tag.compress  { background: #f2ecff; color: #6040a8; }
 .task-priority {
   font-size: 0.65rem;
   color: var(--text-2);
