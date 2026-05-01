@@ -7,13 +7,13 @@ Minimal 4-user beta queue for the Zephost distributed compute dashboard.
 Base URL for the hosted beta:
 
 ```text
-https://sever-for-ai-ladsharing.onrender.com
+https://sever-for-ai-ladsharing-1.onrender.com
 ```
 
 Create a task:
 
 ```js
-await fetch("https://sever-for-ai-ladsharing.onrender.com/task", {
+await fetch("https://sever-for-ai-ladsharing-1.onrender.com/task", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
@@ -27,14 +27,14 @@ await fetch("https://sever-for-ai-ladsharing.onrender.com/task", {
 Worker fetches the next task:
 
 ```js
-const next = await fetch("https://sever-for-ai-ladsharing.onrender.com/task")
+const next = await fetch("https://sever-for-ai-ladsharing-1.onrender.com/task")
   .then((res) => res.json());
 ```
 
 Worker submits a result:
 
 ```js
-await fetch("https://sever-for-ai-ladsharing.onrender.com/result", {
+await fetch("https://sever-for-ai-ladsharing-1.onrender.com/result", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
@@ -47,7 +47,7 @@ await fetch("https://sever-for-ai-ladsharing.onrender.com/result", {
 Read queue stats:
 
 ```js
-const status = await fetch("https://sever-for-ai-ladsharing.onrender.com/status")
+const status = await fetch("https://sever-for-ai-ladsharing-1.onrender.com/status")
   .then((res) => res.json());
 ```
 
