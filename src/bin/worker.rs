@@ -15,7 +15,8 @@ struct FetchTaskResponse {
 #[derive(Debug, Deserialize)]
 struct Task {
     id: u64,
-    task_type: String,
+    file_name: String,
+    quality: String,
     payload: Value,
 }
 
@@ -44,13 +45,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         if let Some(task) = response.task {
             let sleep_secs = 2 + (task.id % 4);
-            println!("worker picked task #{} ({})", task.id, task.task_type);
+            println!(
+                "worker picked task #{} ({}, {})",
+                task.id, task.file_name, task.quality
+            );
             sleep(Duration::from_secs(sleep_secs)).await;
 
             let result = ResultRequest {
                 task_id: task.id,
                 result: json!({
-                    "message": format!("processed {} task", task.task_type),
+                    "message": format!("processed {} at {} quality", task.file_name, task.quality),
                     "simulated_seconds": sleep_secs,
                     "input": task.payload
                 }),

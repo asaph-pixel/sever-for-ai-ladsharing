@@ -4,9 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zephost Beta Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./style.css">
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
-  <script src="config.js"></script>
+  <script src="./config.js"></script>
+  <style>
+    .dropzone { border: 1px dashed var(--border); border-radius: 8px; padding: 0.85rem; background: var(--bg); font-size: 0.76rem; color: var(--text-2); }
+    .dropzone.drag { border-color: var(--accent); color: var(--accent); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+    .helper-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; animation: spin 0.75s linear infinite; }
+    .spinner.hidden { display:none; }
+    .btn-small { border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.65rem; background: var(--bg); color: var(--text-2); font-size: 0.72rem; cursor: pointer; font-family: var(--font-mono); }
+    .pagination { display:flex; gap:.5rem; align-items:center; margin-top:.6rem; }
+    .toast-container { position: fixed; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; gap: 0.6rem; z-index: 999; }
+    .toast { min-width: 220px; max-width: 320px; border-radius: 10px; border: 1px solid #e2e0d8; background: #ffffff; color: #1a1917; padding: 0.65rem 0.8rem; font-family: 'DM Mono', monospace; font-size: 0.76rem; box-shadow: 0 8px 20px rgba(26, 25, 23, 0.12); }
+    .toast.success { border-color: #c0e8d5; background: #f0faf5; color: #2d9e6b; }
+    .toast.error { border-color: #f0c9c4; background: #fff3f1; color: #c0392b; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
   <header class="topbar">
@@ -25,35 +40,26 @@
     <section class="card fade-in" style="--delay:0.05s">
       <div class="card-label">01 - Create Task</div>
       <h2 class="card-title">Queue Work</h2>
-
-      <div class="field">
-        <label for="user-id">User ID</label>
-        <input type="text" id="user-id" value="beta-user-1">
-      </div>
-
-      <div class="field">
-        <label for="task-type">Task Type</label>
-        <select id="task-type">
-          <option value="render">Render</option>
-          <option value="encode">Encode</option>
-          <option value="inference">Inference</option>
-          <option value="compress">Compress</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="payload">Payload JSON</label>
-        <textarea id="payload" rows="5">{"input":"sample-file.mp4","quality":"beta"}</textarea>
-      </div>
-      <div class="quick-actions" aria-label="Sample task payloads">
-        <button class="chip-button" type="button" onclick="useSamplePayload('render')">Render sample</button>
-        <button class="chip-button" type="button" onclick="useSamplePayload('inference')">Inference sample</button>
-        <button class="chip-button" type="button" onclick="useSamplePayload('compress')">Compress sample</button>
-      </div>
-
-      <button class="btn-primary" id="submit-button" onclick="submitTask()">
-        <span>Create Task</span>
-      </button>
+      <form id="create-task-form">
+        <div class="dropzone" id="dropzone">Drop file here or choose one: <input id="file-input" type="file"></div>
+        <div class="field"><label for="file-name">File Name</label><input type="text" id="file-name" name="file_name" placeholder="sample-file.mp4" required></div>
+        <div class="field-row">
+          <div class="field">
+            <label for="quality">Quality</label>
+            <select id="quality" name="quality">
+              <option value="beta">beta</option><option value="standard">standard</option><option value="high">high</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="priority">Priority</label>
+            <select id="priority" name="priority">
+              <option value="high">high</option><option value="medium" selected>medium</option><option value="low">low</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label for="webhook-url">Webhook URL (optional)</label><input id="webhook-url" type="url" placeholder="https://example.com/hook"></div>
+        <button class="btn-primary" id="submit-button" type="submit"><span id="submit-label">Create Task</span> <span id="submit-spinner" class="spinner hidden"></span></button>
+      </form>
       <div class="submit-feedback" id="submit-feedback"></div>
     </section>
 
@@ -65,12 +71,13 @@
         <span>Running: syncing</span>
         <span>Completed: syncing</span>
       </div>
-      <div class="metric-grid" id="metric-grid">
-        <div class="metric-tile"><span class="metric-label">Active Users</span><strong>checking</strong></div>
-        <div class="metric-tile"><span class="metric-label">Total Tasks</span><strong>waiting</strong></div>
-      </div>
+      <div class="metric-grid" id="metric-grid"></div>
       <div class="backend-line" id="backend-line">Backend: connecting to Render</div>
-      <button class="btn-ghost" id="refresh-button" onclick="refreshDashboard()">Refresh</button>
+      <div class="helper-row">
+        <button class="btn-ghost" id="refresh-button" onclick="refreshDashboard({ manual: true })">Refresh</button>
+        <button class="btn-small" id="export-json">Export JSON</button>
+        <button class="btn-small" id="export-csv">Export CSV</button>
+      </div>
     </section>
 
     <section class="card fade-in" style="--delay:0.25s">
@@ -84,230 +91,193 @@
     <section class="card fade-in" style="--delay:0.35s">
       <div class="card-label">04 - Results</div>
       <h2 class="card-title">Worker Output</h2>
+      <div class="field-row">
+        <div class="field"><label for="filter-status">Filter status</label>
+          <select id="filter-status"><option value="">all</option><option value="queued">queued</option><option value="running">running</option><option value="completed">completed</option><option value="cancelled">cancelled</option></select>
+        </div>
+        <div class="field"><label for="filter-user">Filter user</label><input id="filter-user" placeholder="anonymous"></div>
+      </div>
       <div class="result-list" id="result-list">
         <div class="empty-state">Completed results will appear here.</div>
       </div>
+      <div class="pagination">
+        <button class="btn-small" id="prev-page">Prev</button>
+        <span class="time" id="page-indicator">Page 1</span>
+        <button class="btn-small" id="next-page">Next</button>
+      </div>
     </section>
   </main>
+  <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <script>
-    const API_BASE_URL = (
-      window.ZEPHOST_API_BASE_URL ||
-      "https://sever-for-ai-ladsharing-1.onrender.com"
-    ).replace(/\/$/, "");
-
-    function apiUrl(path) {
-      return `${API_BASE_URL}${path}`;
-    }
-
-    function getSessionId() {
-      const key = "zephost_session_id";
-      let sessionId = localStorage.getItem(key);
-
-      if (!sessionId) {
-        sessionId = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-        localStorage.setItem(key, sessionId);
-      }
-
-      return sessionId;
-    }
+    const API_BASE_URL = (window.ZEPHOST_API_BASE_URL || "https://sever-for-ai-ladsharing-1.onrender.com").replace(/\/$/, "");
+    const state = { token: localStorage.getItem("zephost_token") || "", completedPage: 1, completedPerPage: 10 };
+    const apiUrl = (path) => `${API_BASE_URL}/${path.replace(/^\/+/, "")}`;
+    const showToast = (message, type = "success") => { const c = document.getElementById("toast-container"); const t = document.createElement("div"); t.className = `toast ${type}`; t.textContent = message; c.appendChild(t); setTimeout(() => t.remove(), 3200); };
+    const authHeaders = () => { const headers = { "Content-Type": "application/json" }; if (state.token) headers.Authorization = `Bearer ${state.token}`; return headers; };
+    const setSubmitting = (on) => { document.getElementById("submit-button").disabled = on; document.getElementById("submit-spinner").classList.toggle("hidden", !on); document.getElementById("submit-label").textContent = on ? "Creating..." : "Create Task"; };
+    const normalizeStatus = (v) => String(v || "queued").toLowerCase();
+    const remainingEtaMs = (task) => !task.estimated_completion_ms ? 0 : Math.max(0, Number(task.estimated_completion_ms) - Date.now());
+    const etaLabel = (ms) => ms <= 0 ? "due" : `${Math.ceil(ms / 1000)}s`;
 
     function updateClock() {
       const now = new Date();
-      document.getElementById("clock").textContent =
-        now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      document.getElementById("clock").textContent = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     }
 
-    const samplePayloads = {
-      render: { input: "sample-file.mp4", quality: "beta", frames: 120 },
-      inference: { input: "sample-image.png", model: "vision-beta", batch: 1 },
-      compress: { input: "archive-folder", format: "zip", level: "balanced" }
-    };
-
-    function formatStatus(status) {
-      return status.charAt(0).toUpperCase() + status.slice(1);
+    async function ensureSession() {
+      if (state.token) return;
+      const res = await fetch(apiUrl("auth/login"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: "demo", password: "demo" }) });
+      if (!res.ok) throw new Error("unable to initialize session");
+      const body = await res.json();
+      state.token = body.token;
+      localStorage.setItem("zephost_token", state.token);
     }
 
-    function displayCount(value, emptyLabel = "none") {
-      return Number(value) > 0 ? value : emptyLabel;
+    async function refreshStats() {
+      const res = await fetch(apiUrl("status"));
+      const summary = await res.json();
+      document.getElementById("summary-strip").innerHTML = `<span>Queued: ${summary.queued}</span><span>Running: ${summary.running}</span><span>Completed: ${summary.completed}</span>`;
+      document.getElementById("metric-grid").innerHTML = `<div class="metric-tile"><span class="metric-label">Active Users</span><strong>${summary.active_users}</strong></div><div class="metric-tile"><span class="metric-label">Total Tasks</span><strong>${summary.total_tasks}</strong></div>`;
+      document.getElementById("backend-line").textContent = `Backend: connected to ${API_BASE_URL.replace("https://", "")}`;
     }
 
-    function useSamplePayload(type) {
-      document.getElementById("task-type").value = type;
-      document.getElementById("payload").value = JSON.stringify(samplePayloads[type], null, 2);
-      document.getElementById("submit-feedback").textContent = `${formatStatus(type)} sample loaded.`;
-      document.getElementById("submit-feedback").className = "submit-feedback pending";
+    function renderQueue(tasks) {
+      const list = document.getElementById("task-list");
+      const active = tasks.filter((t) => ["queued", "running"].includes(normalizeStatus(t.status)));
+      if (!active.length) { list.innerHTML = '<div class="empty-state">No queued or running tasks.</div>'; return; }
+      list.innerHTML = active.map((task) => `<div class="task-item"><div class="task-meta"><span class="task-id">#${task.id}</span><span class="task-type-tag ${normalizeStatus(task.status) === "running" ? "render":"encode"}">${normalizeStatus(task.status)}</span><span class="task-priority">${task.priority}</span></div><div class="task-footer"><span class="task-node">${task.file_name} (${task.quality}) ETA ${etaLabel(remainingEtaMs(task))}</span><span class="task-pct"><button class="btn-small" onclick="cancelTask(${task.id})">Cancel</button></span></div></div>`).join("");
     }
 
-    function renderSummary(summary) {
-      document.getElementById("summary-strip").innerHTML = `
-        <span>Queued: ${displayCount(summary.queued)}</span>
-        <span>Running: ${displayCount(summary.running, "idle")}</span>
-        <span>Completed: ${displayCount(summary.completed)}</span>
-      `;
-
-      document.getElementById("metric-grid").innerHTML = `
-        <div class="metric-tile"><span class="metric-label">Active Users</span><strong>${summary.active_users > 0 ? `${summary.active_users} / ${summary.beta_user_limit}` : `ready for ${summary.beta_user_limit}`}</strong></div>
-        <div class="metric-tile"><span class="metric-label">Total Tasks</span><strong>${displayCount(summary.total_tasks, "none yet")}</strong></div>
-      `;
-
-      document.getElementById("system-pill").textContent =
-        summary.running > 0 ? "worker processing" : "zephost online";
-      document.getElementById("backend-line").textContent =
-        `Backend: connected to ${API_BASE_URL.replace("https://", "")}`;
-    }
-
-    function renderTasks(tasks) {
-      const taskList = document.getElementById("task-list");
-      const activeTasks = tasks.filter(task => task.status !== "completed");
-
-      if (!activeTasks.length) {
-        taskList.innerHTML = '<div class="empty-state">No queued or running tasks.</div>';
-        return;
-      }
-
-      taskList.innerHTML = activeTasks.map(task => `
-        <div class="task-item">
-          <div class="task-meta">
-            <span class="task-id">#${task.id}</span>
-            <span class="task-type-tag ${task.task_type}">${task.task_type}</span>
-            <span class="task-priority">${task.user_id}</span>
-          </div>
-          <div class="task-footer">
-            <span class="task-node">${JSON.stringify(task.payload)}</span>
-            <span class="task-pct">${formatStatus(task.status)}</span>
-          </div>
-        </div>
-      `).join("");
-    }
-
-    function renderResults(tasks) {
-      const completedTasks = tasks.filter(task => task.status === "completed");
+    function renderCompleted(items, total, page, perPage) {
       const resultList = document.getElementById("result-list");
-
-      if (!completedTasks.length) {
-        resultList.innerHTML = '<div class="empty-state">Completed results will appear here.</div>';
-        return;
-      }
-
-      resultList.innerHTML = completedTasks.map(task => `
-        <div class="result-item">
-          <div class="result-header">
-            <span class="result-id">#${task.id}</span>
-            <span class="result-badge success">Complete</span>
-          </div>
-          <div class="result-time">${task.user_id} / ${task.task_type}</div>
-          <pre class="empty-state">${JSON.stringify(task.result, null, 2)}</pre>
-        </div>
-      `).join("");
+      if (!items.length) { resultList.innerHTML = '<div class="empty-state">No completed tasks for current filter.</div>'; return; }
+      resultList.innerHTML = items.map((task) => `<div class="result-item"><div class="result-header"><span class="result-id">#${task.id}</span><span class="result-badge success">Complete</span></div><div class="result-time">${task.file_name} / ${task.quality}</div><pre class="empty-state" id="result-${task.id}">${JSON.stringify(task.result || task, null, 2)}</pre><button class="btn-small" onclick="copyResult(${task.id})">Copy output JSON</button></div>`).join("");
+      const pages = Math.max(1, Math.ceil(total / perPage));
+      document.getElementById("page-indicator").textContent = `Page ${page} / ${pages}`;
     }
 
-    async function refreshDashboard() {
-      const feedback = document.getElementById("submit-feedback");
-      const refreshButton = document.getElementById("refresh-button");
-
-      refreshButton.disabled = true;
-      refreshButton.textContent = "Refreshing...";
-      document.getElementById("backend-line").textContent = "Backend: syncing latest state";
-
+    async function refreshDashboard(options = {}) {
+      const isManual = Boolean(options.manual);
+      const statusFilter = document.getElementById("filter-status").value;
+      const userFilter = document.getElementById("filter-user").value.trim();
+      if (isManual) document.getElementById("refresh-button").disabled = true;
       try {
-        const [summaryRes, tasksRes] = await Promise.all([
-          fetch(apiUrl("/status")),
-          fetch(apiUrl("/tasks"))
-        ]);
-
-        if (!summaryRes.ok || !tasksRes.ok) {
-          throw new Error("Unable to refresh Zephost dashboard.");
-        }
-
-        const summary = await summaryRes.json();
-        const tasks = await tasksRes.json();
-
-        renderSummary(summary);
-        renderTasks(tasks);
-        renderResults(tasks);
+        await ensureSession();
+        await refreshStats();
+        const allRes = await fetch(apiUrl(`tasks?per_page=200&page=1${userFilter ? `&user_id=${encodeURIComponent(userFilter)}` : ""}`), { headers: authHeaders() });
+        const allBody = await allRes.json();
+        renderQueue(allBody.items || []);
+        const completedStatus = statusFilter || "completed";
+        const doneRes = await fetch(apiUrl(`tasks?status=${encodeURIComponent(completedStatus)}&page=${state.completedPage}&per_page=${state.completedPerPage}${userFilter ? `&user_id=${encodeURIComponent(userFilter)}` : ""}`), { headers: authHeaders() });
+        const doneBody = await doneRes.json();
+        renderCompleted(doneBody.items || [], doneBody.total || 0, doneBody.page || 1, doneBody.per_page || state.completedPerPage);
       } catch (error) {
-        feedback.textContent = "Could not reach the Zephost backend.";
-        feedback.className = "submit-feedback error";
-        document.getElementById("system-pill").textContent = "backend waking";
-        document.getElementById("backend-line").textContent = "Backend: Render may be waking from cold start";
+        document.getElementById("submit-feedback").textContent = error.message || "Could not sync dashboard.";
+        document.getElementById("submit-feedback").className = "submit-feedback error";
       } finally {
-        refreshButton.disabled = false;
-        refreshButton.textContent = "Refresh";
+        if (isManual) document.getElementById("refresh-button").disabled = false;
       }
     }
 
-    async function sendHeartbeat() {
+    async function submitTask(event) {
+      event.preventDefault();
+      const fileInput = document.getElementById("file-input");
+      const picked = fileInput.files && fileInput.files[0];
+      const fileName = picked ? picked.name : document.getElementById("file-name").value.trim();
+      if (!fileName) { showToast("Select or drop a file first.", "error"); return; }
+      setSubmitting(true);
       try {
-        const res = await fetch(apiUrl("/heartbeat"), {
+        await ensureSession();
+        const response = await fetch(apiUrl("tasks"), {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id: getSessionId() })
-        });
-
-        const summary = await res.json();
-        if (!res.ok) {
-          throw new Error(summary.error || "Beta session limit reached.");
-        }
-
-        renderSummary(summary);
-      } catch (error) {
-        document.getElementById("system-pill").textContent = "session waiting";
-        document.getElementById("backend-line").textContent =
-          error.message || "Backend: session heartbeat failed";
-      }
-    }
-
-    async function submitTask() {
-      const feedback = document.getElementById("submit-feedback");
-      const button = document.getElementById("submit-button");
-      let payload;
-
-      try {
-        payload = JSON.parse(document.getElementById("payload").value || "{}");
-      } catch {
-        feedback.textContent = "Payload must be valid JSON.";
-        feedback.className = "submit-feedback error";
-        return;
-      }
-
-      button.disabled = true;
-      feedback.textContent = "Creating task...";
-      feedback.className = "submit-feedback pending";
-
-      try {
-        const res = await fetch(apiUrl("/task"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeaders(),
           body: JSON.stringify({
-            user_id: document.getElementById("user-id").value,
-            task_type: document.getElementById("task-type").value,
-            payload
+            user_id: "demo",
+            file_name: fileName,
+            quality: document.getElementById("quality").value,
+            priority: document.getElementById("priority").value,
+            webhook_url: document.getElementById("webhook-url").value.trim() || null,
+            payload: picked ? { size: picked.size, type: picked.type, uploaded: true } : { uploaded: false }
           })
         });
-
-        const body = await res.json();
-        if (!res.ok) {
-          throw new Error(body.error || "Could not create task.");
-        }
-
-        feedback.textContent = `Task #${body.id} queued.`;
-        feedback.className = "submit-feedback success";
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "Could not create task.");
+        showToast(`Task #${payload.id} queued`, "success");
+        document.getElementById("submit-feedback").textContent = `Task #${payload.id} queued successfully.`;
+        document.getElementById("submit-feedback").className = "submit-feedback success";
+        document.getElementById("create-task-form").reset();
         await refreshDashboard();
       } catch (error) {
-        feedback.textContent = error.message || "Could not create task.";
-        feedback.className = "submit-feedback error";
+        showToast(error.message || "Create failed", "error");
+        document.getElementById("submit-feedback").textContent = error.message || "Could not create task.";
+        document.getElementById("submit-feedback").className = "submit-feedback error";
       } finally {
-        button.disabled = false;
+        setSubmitting(false);
       }
     }
 
+    async function cancelTask(taskId) {
+      try {
+        await ensureSession();
+        const response = await fetch(apiUrl(`tasks/${taskId}/cancel`), { method: "POST", headers: authHeaders() });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "Cancel failed");
+        showToast(`Task #${taskId} cancelled`, "success");
+        await refreshDashboard();
+      } catch (error) {
+        showToast(error.message || "Cancel failed", "error");
+      }
+    }
+
+    function copyResult(taskId) {
+      const content = document.getElementById(`result-${taskId}`)?.textContent || "";
+      navigator.clipboard.writeText(content).then(() => showToast("Output JSON copied", "success")).catch(() => showToast("Copy failed", "error"));
+    }
+    window.cancelTask = cancelTask;
+    window.copyResult = copyResult;
+    window.refreshDashboard = refreshDashboard;
+
+    function wireDragDrop() {
+      const dropzone = document.getElementById("dropzone");
+      const fileInput = document.getElementById("file-input");
+      const onFile = (file) => { if (!file) return; document.getElementById("file-name").value = file.name; dropzone.firstChild.textContent = `Loaded: ${file.name} (${Math.ceil(file.size/1024)} KB) `; };
+      fileInput.addEventListener("change", (e) => onFile(e.target.files[0]));
+      ["dragenter", "dragover"].forEach((name) => dropzone.addEventListener(name, (e) => { e.preventDefault(); dropzone.classList.add("drag"); }));
+      ["dragleave", "drop"].forEach((name) => dropzone.addEventListener(name, (e) => { e.preventDefault(); dropzone.classList.remove("drag"); }));
+      dropzone.addEventListener("drop", (e) => { const file = e.dataTransfer.files[0]; fileInput.files = e.dataTransfer.files; onFile(file); });
+    }
+
+    function connectWebsocket() {
+      const wsBase = API_BASE_URL.replace(/^http/, "ws");
+      try {
+        const socket = new WebSocket(`${wsBase}/ws`);
+        socket.onmessage = () => refreshDashboard();
+        socket.onclose = () => setTimeout(connectWebsocket, 2000);
+      } catch {
+        setInterval(refreshDashboard, 3000);
+      }
+    }
+
+    function downloadExport(format) {
+      const userFilter = document.getElementById("filter-user").value.trim();
+      const status = document.getElementById("filter-status").value;
+      const query = `format=${format}${status ? `&status=${encodeURIComponent(status)}` : ""}${userFilter ? `&user_id=${encodeURIComponent(userFilter)}` : ""}`;
+      window.open(apiUrl(`tasks/export?${query}`), "_blank");
+    }
+
+    document.getElementById("create-task-form").addEventListener("submit", submitTask);
+    document.getElementById("prev-page").addEventListener("click", () => { state.completedPage = Math.max(1, state.completedPage - 1); refreshDashboard(); });
+    document.getElementById("next-page").addEventListener("click", () => { state.completedPage += 1; refreshDashboard(); });
+    document.getElementById("filter-status").addEventListener("change", () => { state.completedPage = 1; refreshDashboard(); });
+    document.getElementById("filter-user").addEventListener("change", () => { state.completedPage = 1; refreshDashboard(); });
+    document.getElementById("export-json").addEventListener("click", () => downloadExport("json"));
+    document.getElementById("export-csv").addEventListener("click", () => downloadExport("csv"));
+    wireDragDrop();
     updateClock();
     setInterval(updateClock, 1000);
-    sendHeartbeat();
     refreshDashboard();
-    setInterval(sendHeartbeat, 10000);
-    setInterval(refreshDashboard, 3000);
+    connectWebsocket();
   </script>
 </body>
 </html>
