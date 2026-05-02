@@ -3,110 +3,243 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zephost Beta Dashboard</title>
+  <title>Zephost — Distributed task queue for builders</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
   <script src="./config.js"></script>
-  <style>
-    .dropzone { border: 1px dashed var(--border); border-radius: 8px; padding: 0.85rem; background: var(--bg); font-size: 0.76rem; color: var(--text-2); }
-    .dropzone.drag { border-color: var(--accent); color: var(--accent); }
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
-    .helper-row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-    .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; animation: spin 0.75s linear infinite; }
-    .spinner.hidden { display:none; }
-    .btn-small { border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.65rem; background: var(--bg); color: var(--text-2); font-size: 0.72rem; cursor: pointer; font-family: var(--font-mono); }
-    .pagination { display:flex; gap:.5rem; align-items:center; margin-top:.6rem; }
-    .toast-container { position: fixed; right: 1rem; bottom: 1rem; display: flex; flex-direction: column; gap: 0.6rem; z-index: 999; }
-    .toast { min-width: 220px; max-width: 320px; border-radius: 10px; border: 1px solid #e2e0d8; background: #ffffff; color: #1a1917; padding: 0.65rem 0.8rem; font-family: 'DM Mono', monospace; font-size: 0.76rem; box-shadow: 0 8px 20px rgba(26, 25, 23, 0.12); }
-    .toast.success { border-color: #c0e8d5; background: #f0faf5; color: #2d9e6b; }
-    .toast.error { border-color: #f0c9c4; background: #fff3f1; color: #c0392b; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-dot"></span>
-      <span class="brand-name">Zephost</span>
-      <span class="brand-sub">/ 4-user beta</span>
-    </div>
-    <div class="topbar-right">
-      <span class="status-pill live" id="system-pill">checking backend</span>
-      <span class="time" id="clock"></span>
-    </div>
+  <a class="skip-link" href="#dashboard">Skip to dashboard</a>
+
+  <header class="site-header">
+    <nav class="nav-shell" aria-label="Primary">
+      <a class="nav-brand" href="#">Zephost</a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#trust">Trust</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#dashboard">Dashboard</a>
+      </div>
+      <a class="btn-nav-cta" href="#dashboard">Open console</a>
+    </nav>
   </header>
 
-  <main class="grid">
-    <section class="card fade-in" style="--delay:0.05s">
-      <div class="card-label">01 - Create Task</div>
-      <h2 class="card-title">Queue Work</h2>
-      <form id="create-task-form">
-        <div class="dropzone" id="dropzone">Drop file here or choose one: <input id="file-input" type="file"></div>
-        <div class="field"><label for="file-name">File Name</label><input type="text" id="file-name" name="file_name" placeholder="sample-file.mp4" required></div>
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow"><span>Beta</span> 4 concurrent sessions · fair queue</p>
+      <h1 class="hero-title">Host-grade task queue for your next workload.</h1>
+      <p class="hero-lead">
+        Zephost is a lightweight control plane to queue render, encode, and inference-style jobs with live status,
+        webhooks, and exports—without running your own orchestrator.
+      </p>
+      <div class="hero-actions">
+        <a class="btn-hero-primary" href="#dashboard">Start queuing work</a>
+        <a class="btn-hero-secondary" href="#pricing">View plans</a>
+      </div>
+      <div class="hero-metrics" aria-hidden="true">
+        <div class="hero-metric"><strong>Real-time</strong><span>WebSocket + status API</span></div>
+        <div class="hero-metric"><strong>Fair beta</strong><span>Session &amp; rate limits</span></div>
+        <div class="hero-metric"><strong>Portable</strong><span>JSON / CSV export</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="section-head">
+      <p class="section-kicker">Features</p>
+      <h2 class="section-title">Everything you need to ship a worker-backed product</h2>
+      <p class="section-desc">Same capabilities you already use in the console—presented for visitors and power users alike.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <h3>Drag-and-drop uploads</h3>
+        <p>Attach real files; we capture metadata and queue a job with priority and quality presets.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Live queue &amp; ETA</h3>
+        <p>See queued and running work with estimated completion so users know what to expect.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Webhooks &amp; exports</h3>
+        <p>Optional per-task webhook URL plus one-click JSON or CSV export for your pipelines.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Auth-ready</h3>
+        <p>Session heartbeat for beta fairness, bearer login, and API keys for integrations.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="trust" class="section">
+    <div class="section-head">
+      <p class="section-kicker">Trust</p>
+      <h2 class="section-title">Built with production habits</h2>
+      <p class="section-desc">Honest beta positioning: strong defaults today, room to harden as you scale.</p>
+    </div>
+    <div class="trust-strip">
+      <div class="trust-item">
+        <div class="trust-icon" aria-hidden="true">⏱</div>
+        <div>
+          <h3>Uptime-minded</h3>
+          <p>Designed for always-on workers with health endpoints and cold-start aware dashboards.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon" aria-hidden="true">🔒</div>
+        <div>
+          <h3>TLS in transit</h3>
+          <p>HTTPS APIs and WSS-friendly updates; keep secrets in env—not in the client.</p>
+        </div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon" aria-hidden="true">⚖</div>
+        <div>
+          <h3>Fair usage</h3>
+          <p>Session caps and per-user rate limits so one tenant cannot starve the beta queue.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section">
+    <div class="section-head">
+      <p class="section-kicker">Pricing</p>
+      <h2 class="section-title">Simple tiers. Upgrade when you outgrow the beta.</h2>
+      <p class="section-desc">Transparent packaging inspired by modern cloud dashboards—pick what matches your stage.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Beta</h3>
+        <p class="price">$0 <span>/ month</span></p>
+        <ul>
+          <li>4 concurrent dashboard sessions</li>
+          <li>Queue, cancel, and export</li>
+          <li>Community webhook support</li>
+        </ul>
+        <a class="btn-price" href="#dashboard">Use beta</a>
+      </div>
+      <div class="price-card featured">
+        <span class="badge">Popular</span>
+        <h3>Team</h3>
+        <p class="price">$29 <span>/ month</span></p>
+        <ul>
+          <li>Higher queue throughput</li>
+          <li>Priority routing</li>
+          <li>Email support SLA (target)</li>
+        </ul>
+        <a class="btn-price" href="#dashboard">Join waitlist</a>
+      </div>
+      <div class="price-card">
+        <h3>Enterprise</h3>
+        <p class="price">Custom</p>
+        <ul>
+          <li>Private workers &amp; regions</li>
+          <li>SSO &amp; audit trails</li>
+          <li>Dedicated solutions engineer</li>
+        </ul>
+        <a class="btn-price" href="#dashboard">Talk to us</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="dashboard" class="section dashboard-section" aria-label="Zephost dashboard">
+    <div class="section-head">
+      <p class="section-kicker">Console</p>
+      <h2 class="section-title">Your live control plane</h2>
+      <p class="section-desc">Create tasks, watch the queue, and pull structured output—the same workflow as before, now in a focused layout.</p>
+    </div>
+
+    <div class="dashboard-topbar">
+      <div class="dashboard-brand"><strong>Zephost</strong> <span>· 4-user beta</span></div>
+      <div class="dashboard-topbar-right">
+        <span class="status-pill live" id="system-pill">checking backend</span>
+        <span class="time" id="clock"></span>
+      </div>
+    </div>
+
+    <main class="grid">
+      <section class="card fade-in" style="--delay:0.05s">
+        <div class="card-label">01 — Create Task</div>
+        <h2 class="card-title">Queue work</h2>
+        <form id="create-task-form">
+          <div class="dropzone" id="dropzone">
+            <span id="dropzone-label">Drop a file here or choose one.</span>
+            <input id="file-input" type="file" aria-label="Choose file">
+          </div>
+          <div class="field"><label for="file-name">File name</label><input type="text" id="file-name" name="file_name" placeholder="sample-file.mp4" required></div>
+          <div class="field-row">
+            <div class="field">
+              <label for="quality">Quality</label>
+              <select id="quality" name="quality">
+                <option value="beta">beta</option><option value="standard">standard</option><option value="high">high</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="priority">Priority</label>
+              <select id="priority" name="priority">
+                <option value="high">high</option><option value="medium" selected>medium</option><option value="low">low</option>
+              </select>
+            </div>
+          </div>
+          <div class="field"><label for="webhook-url">Webhook URL (optional)</label><input id="webhook-url" type="url" placeholder="https://example.com/hook"></div>
+          <button class="btn-primary" id="submit-button" type="submit"><span id="submit-label">Create Task</span><span id="submit-spinner" class="spinner hidden" aria-hidden="true"></span></button>
+        </form>
+        <div class="submit-feedback" id="submit-feedback"></div>
+      </section>
+
+      <section class="card fade-in" style="--delay:0.1s">
+        <div class="card-label">02 — Queue Status</div>
+        <h2 class="card-title">System stats</h2>
+        <div class="summary-strip" id="summary-strip">
+          <span>Queued: …</span><span>Running: …</span><span>Completed: …</span>
+        </div>
+        <div class="metric-grid" id="metric-grid"></div>
+        <div class="backend-line" id="backend-line">Backend: connecting…</div>
+        <div class="helper-row">
+          <button class="btn-ghost" id="refresh-button" type="button" onclick="refreshDashboard({ manual: true })">Refresh</button>
+          <button class="btn-small" id="export-json" type="button">Export JSON</button>
+          <button class="btn-small" id="export-csv" type="button">Export CSV</button>
+        </div>
+      </section>
+
+      <section class="card fade-in" style="--delay:0.15s">
+        <div class="card-label">03 — Tasks</div>
+        <h2 class="card-title">Live queue</h2>
+        <div class="task-list" id="task-list">
+          <div class="empty-state">No tasks yet.</div>
+        </div>
+      </section>
+
+      <section class="card fade-in" style="--delay:0.2s">
+        <div class="card-label">04 — Results</div>
+        <h2 class="card-title">Worker output</h2>
         <div class="field-row">
-          <div class="field">
-            <label for="quality">Quality</label>
-            <select id="quality" name="quality">
-              <option value="beta">beta</option><option value="standard">standard</option><option value="high">high</option>
+          <div class="field"><label for="filter-status">Filter status</label>
+            <select id="filter-status">
+              <option value="">all</option><option value="queued">queued</option><option value="running">running</option><option value="completed">completed</option><option value="cancelled">cancelled</option>
             </select>
           </div>
-          <div class="field">
-            <label for="priority">Priority</label>
-            <select id="priority" name="priority">
-              <option value="high">high</option><option value="medium" selected>medium</option><option value="low">low</option>
-            </select>
-          </div>
+          <div class="field"><label for="filter-user">Filter user</label><input id="filter-user" placeholder="demo"></div>
         </div>
-        <div class="field"><label for="webhook-url">Webhook URL (optional)</label><input id="webhook-url" type="url" placeholder="https://example.com/hook"></div>
-        <button class="btn-primary" id="submit-button" type="submit"><span id="submit-label">Create Task</span> <span id="submit-spinner" class="spinner hidden"></span></button>
-      </form>
-      <div class="submit-feedback" id="submit-feedback"></div>
-    </section>
-
-    <section class="card fade-in" style="--delay:0.15s">
-      <div class="card-label">02 - Queue Status</div>
-      <h2 class="card-title">System Stats</h2>
-      <div class="summary-strip" id="summary-strip">
-        <span>Queued: syncing</span>
-        <span>Running: syncing</span>
-        <span>Completed: syncing</span>
-      </div>
-      <div class="metric-grid" id="metric-grid"></div>
-      <div class="backend-line" id="backend-line">Backend: connecting to Render</div>
-      <div class="helper-row">
-        <button class="btn-ghost" id="refresh-button" onclick="refreshDashboard({ manual: true })">Refresh</button>
-        <button class="btn-small" id="export-json">Export JSON</button>
-        <button class="btn-small" id="export-csv">Export CSV</button>
-      </div>
-    </section>
-
-    <section class="card fade-in" style="--delay:0.25s">
-      <div class="card-label">03 - Tasks</div>
-      <h2 class="card-title">Live Queue</h2>
-      <div class="task-list" id="task-list">
-        <div class="empty-state">No tasks yet.</div>
-      </div>
-    </section>
-
-    <section class="card fade-in" style="--delay:0.35s">
-      <div class="card-label">04 - Results</div>
-      <h2 class="card-title">Worker Output</h2>
-      <div class="field-row">
-        <div class="field"><label for="filter-status">Filter status</label>
-          <select id="filter-status"><option value="">all</option><option value="queued">queued</option><option value="running">running</option><option value="completed">completed</option><option value="cancelled">cancelled</option></select>
+        <div class="result-list" id="result-list">
+          <div class="empty-state">Results appear here after tasks finish (or match your filters).</div>
         </div>
-        <div class="field"><label for="filter-user">Filter user</label><input id="filter-user" placeholder="anonymous"></div>
-      </div>
-      <div class="result-list" id="result-list">
-        <div class="empty-state">Completed results will appear here.</div>
-      </div>
-      <div class="pagination">
-        <button class="btn-small" id="prev-page">Prev</button>
-        <span class="time" id="page-indicator">Page 1</span>
-        <button class="btn-small" id="next-page">Next</button>
-      </div>
-    </section>
-  </main>
+        <div class="pagination">
+          <button class="btn-small" id="prev-page" type="button">Prev</button>
+          <span class="time" id="page-indicator">Page 1</span>
+          <button class="btn-small" id="next-page" type="button">Next</button>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <footer class="site-footer">
+    <span>© Zephost beta · Fair queue · <a href="#dashboard">Console</a></span>
+    <span><a href="#pricing">Pricing</a> · <a href="#trust">Security &amp; trust</a></span>
+  </footer>
+
   <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
   <script>
@@ -115,10 +248,20 @@
     const apiUrl = (path) => `${API_BASE_URL}/${path.replace(/^\/+/, "")}`;
     const showToast = (message, type = "success") => { const c = document.getElementById("toast-container"); const t = document.createElement("div"); t.className = `toast ${type}`; t.textContent = message; c.appendChild(t); setTimeout(() => t.remove(), 3200); };
     const authHeaders = () => { const headers = { "Content-Type": "application/json" }; if (state.token) headers.Authorization = `Bearer ${state.token}`; return headers; };
-    const setSubmitting = (on) => { document.getElementById("submit-button").disabled = on; document.getElementById("submit-spinner").classList.toggle("hidden", !on); document.getElementById("submit-label").textContent = on ? "Creating..." : "Create Task"; };
+    const setSubmitting = (on) => { document.getElementById("submit-button").disabled = on; document.getElementById("submit-spinner").classList.toggle("hidden", !on); document.getElementById("submit-label").textContent = on ? "Creating…" : "Create Task"; };
     const normalizeStatus = (v) => String(v || "queued").toLowerCase();
     const remainingEtaMs = (task) => !task.estimated_completion_ms ? 0 : Math.max(0, Number(task.estimated_completion_ms) - Date.now());
     const etaLabel = (ms) => ms <= 0 ? "due" : `${Math.ceil(ms / 1000)}s`;
+
+    function getSessionId() {
+      const key = "zephost_session_id";
+      let id = localStorage.getItem(key);
+      if (!id) {
+        id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+        localStorage.setItem(key, id);
+      }
+      return id;
+    }
 
     function updateClock() {
       const now = new Date();
@@ -135,48 +278,113 @@
     }
 
     async function refreshStats() {
-      const res = await fetch(apiUrl("status"));
-      const summary = await res.json();
-      document.getElementById("summary-strip").innerHTML = `<span>Queued: ${summary.queued}</span><span>Running: ${summary.running}</span><span>Completed: ${summary.completed}</span>`;
-      document.getElementById("metric-grid").innerHTML = `<div class="metric-tile"><span class="metric-label">Active Users</span><strong>${summary.active_users}</strong></div><div class="metric-tile"><span class="metric-label">Total Tasks</span><strong>${summary.total_tasks}</strong></div>`;
-      document.getElementById("backend-line").textContent = `Backend: connected to ${API_BASE_URL.replace("https://", "")}`;
+      let summary = null;
+      try {
+        const hbRes = await fetch(apiUrl("heartbeat"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: getSessionId() })
+        });
+        if (hbRes.ok) summary = await hbRes.json();
+      } catch (_) { /* ignore */ }
+      if (!summary) {
+        const res = await fetch(apiUrl("status"));
+        summary = await res.json();
+      }
+      const limit = summary.beta_user_limit ?? 4;
+      document.getElementById("summary-strip").innerHTML =
+        `<span>Queued: ${summary.queued}</span><span>Running: ${summary.running}</span><span>Completed: ${summary.completed}</span>`;
+      document.getElementById("metric-grid").innerHTML =
+        `<div class="metric-tile"><span class="metric-label">Active sessions</span><strong title="Dashboard heartbeats this browser sends">${summary.active_users} / ${limit}</strong></div>` +
+        `<div class="metric-tile"><span class="metric-label">Total tasks</span><strong>${summary.total_tasks}</strong></div>`;
+      document.getElementById("backend-line").textContent = `Backend: ${API_BASE_URL.replace(/^https?:\/\//, "")}`;
+      const pill = document.getElementById("system-pill");
+      if (summary.running > 0) pill.textContent = "worker busy";
+      else if (summary.queued > 0) pill.textContent = "queue active";
+      else pill.textContent = "zephost online";
     }
 
     function renderQueue(tasks) {
       const list = document.getElementById("task-list");
       const active = tasks.filter((t) => ["queued", "running"].includes(normalizeStatus(t.status)));
       if (!active.length) { list.innerHTML = '<div class="empty-state">No queued or running tasks.</div>'; return; }
-      list.innerHTML = active.map((task) => `<div class="task-item"><div class="task-meta"><span class="task-id">#${task.id}</span><span class="task-type-tag ${normalizeStatus(task.status) === "running" ? "render":"encode"}">${normalizeStatus(task.status)}</span><span class="task-priority">${task.priority}</span></div><div class="task-footer"><span class="task-node">${task.file_name} (${task.quality}) ETA ${etaLabel(remainingEtaMs(task))}</span><span class="task-pct"><button class="btn-small" onclick="cancelTask(${task.id})">Cancel</button></span></div></div>`).join("");
+      list.innerHTML = active.map((task) => {
+        const st = normalizeStatus(task.status);
+        const tagClass = st === "running" ? "render" : "encode";
+        const pri = typeof task.priority === "string" ? task.priority : String(task.priority || "medium");
+        return `<div class="task-item"><div class="task-meta"><span class="task-id">#${task.id}</span><span class="task-type-tag ${tagClass}">${st}</span><span class="task-priority">${pri}</span></div><div class="task-footer"><span class="task-node">${task.file_name} · ${task.quality} · ETA ${etaLabel(remainingEtaMs(task))}</span><span class="task-pct"><button type="button" class="btn-small" onclick="cancelTask(${task.id})">Cancel</button></span></div></div>`;
+      }).join("");
+    }
+
+    function resultBadgeHtml(task) {
+      const s = normalizeStatus(task.status);
+      if (s === "completed") return '<span class="result-badge success">Completed</span>';
+      if (s === "cancelled") return '<span class="result-badge muted">Cancelled</span>';
+      if (s === "running") return '<span class="result-badge pending">Running</span>';
+      if (s === "queued") return '<span class="result-badge pending">Queued</span>';
+      return `<span class="result-badge muted">${s}</span>`;
+    }
+
+    function taskOutputJson(task) {
+      if (task.result != null) return JSON.stringify(task.result, null, 2);
+      const s = normalizeStatus(task.status);
+      return JSON.stringify({
+        id: task.id,
+        status: task.status,
+        user_id: task.user_id,
+        file_name: task.file_name,
+        quality: task.quality,
+        priority: task.priority,
+        note: s === "cancelled" ? "Task was cancelled before a worker result was recorded." : "No worker result payload yet for this task."
+      }, null, 2);
     }
 
     function renderCompleted(items, total, page, perPage) {
       const resultList = document.getElementById("result-list");
-      if (!items.length) { resultList.innerHTML = '<div class="empty-state">No completed tasks for current filter.</div>'; return; }
-      resultList.innerHTML = items.map((task) => `<div class="result-item"><div class="result-header"><span class="result-id">#${task.id}</span><span class="result-badge success">Complete</span></div><div class="result-time">${task.file_name} / ${task.quality}</div><pre class="empty-state" id="result-${task.id}">${JSON.stringify(task.result || task, null, 2)}</pre><button class="btn-small" onclick="copyResult(${task.id})">Copy output JSON</button></div>`).join("");
+      if (!items.length) {
+        resultList.innerHTML = '<div class="empty-state">No tasks match this page or filter.</div>';
+        return;
+      }
+      resultList.innerHTML = items.map((task) =>
+        `<div class="result-item"><div class="result-header"><span class="result-id">#${task.id}</span>${resultBadgeHtml(task)}</div>` +
+        `<div class="result-time">${task.file_name} · ${task.quality} · ${task.user_id || "user"}</div>` +
+        `<pre class="result-json" id="result-${task.id}">${escapeHtml(taskOutputJson(task))}</pre>` +
+        `<button type="button" class="btn-small" onclick="copyResult(${task.id})">Copy output JSON</button></div>`
+      ).join("");
       const pages = Math.max(1, Math.ceil(total / perPage));
       document.getElementById("page-indicator").textContent = `Page ${page} / ${pages}`;
+    }
+
+    function escapeHtml(text) {
+      const d = document.createElement("div");
+      d.textContent = text;
+      return d.innerHTML;
     }
 
     async function refreshDashboard(options = {}) {
       const isManual = Boolean(options.manual);
       const statusFilter = document.getElementById("filter-status").value;
       const userFilter = document.getElementById("filter-user").value.trim();
-      if (isManual) document.getElementById("refresh-button").disabled = true;
+      const refreshBtn = document.getElementById("refresh-button");
+      if (isManual) refreshBtn.disabled = true;
       try {
         await ensureSession();
         await refreshStats();
         const allRes = await fetch(apiUrl(`tasks?per_page=200&page=1${userFilter ? `&user_id=${encodeURIComponent(userFilter)}` : ""}`), { headers: authHeaders() });
         const allBody = await allRes.json();
         renderQueue(allBody.items || []);
-        const completedStatus = statusFilter || "completed";
-        const doneRes = await fetch(apiUrl(`tasks?status=${encodeURIComponent(completedStatus)}&page=${state.completedPage}&per_page=${state.completedPerPage}${userFilter ? `&user_id=${encodeURIComponent(userFilter)}` : ""}`), { headers: authHeaders() });
+
+        let listUrl = apiUrl(`tasks?page=${state.completedPage}&per_page=${state.completedPerPage}${userFilter ? `&user_id=${encodeURIComponent(userFilter)}` : ""}`);
+        if (statusFilter) listUrl += `&status=${encodeURIComponent(statusFilter)}`;
+        const doneRes = await fetch(listUrl, { headers: authHeaders() });
         const doneBody = await doneRes.json();
         renderCompleted(doneBody.items || [], doneBody.total || 0, doneBody.page || 1, doneBody.per_page || state.completedPerPage);
       } catch (error) {
         document.getElementById("submit-feedback").textContent = error.message || "Could not sync dashboard.";
         document.getElementById("submit-feedback").className = "submit-feedback error";
+        document.getElementById("system-pill").textContent = "backend issue";
       } finally {
-        if (isManual) document.getElementById("refresh-button").disabled = false;
+        if (isManual) refreshBtn.disabled = false;
       }
     }
 
@@ -207,6 +415,7 @@
         document.getElementById("submit-feedback").textContent = `Task #${payload.id} queued successfully.`;
         document.getElementById("submit-feedback").className = "submit-feedback success";
         document.getElementById("create-task-form").reset();
+        document.getElementById("dropzone-label").textContent = "Drop a file here or choose one.";
         await refreshDashboard();
       } catch (error) {
         showToast(error.message || "Create failed", "error");
@@ -231,8 +440,8 @@
     }
 
     function copyResult(taskId) {
-      const content = document.getElementById(`result-${taskId}`)?.textContent || "";
-      navigator.clipboard.writeText(content).then(() => showToast("Output JSON copied", "success")).catch(() => showToast("Copy failed", "error"));
+      const raw = document.getElementById(`result-${taskId}`)?.textContent || "";
+      navigator.clipboard.writeText(raw).then(() => showToast("Output JSON copied", "success")).catch(() => showToast("Copy failed", "error"));
     }
     window.cancelTask = cancelTask;
     window.copyResult = copyResult;
@@ -240,12 +449,25 @@
 
     function wireDragDrop() {
       const dropzone = document.getElementById("dropzone");
+      const label = document.getElementById("dropzone-label");
       const fileInput = document.getElementById("file-input");
-      const onFile = (file) => { if (!file) return; document.getElementById("file-name").value = file.name; dropzone.firstChild.textContent = `Loaded: ${file.name} (${Math.ceil(file.size/1024)} KB) `; };
+      const onFile = (file) => {
+        if (!file) return;
+        document.getElementById("file-name").value = file.name;
+        label.textContent = `Loaded: ${file.name} (${Math.ceil(file.size / 1024)} KB)`;
+      };
       fileInput.addEventListener("change", (e) => onFile(e.target.files[0]));
       ["dragenter", "dragover"].forEach((name) => dropzone.addEventListener(name, (e) => { e.preventDefault(); dropzone.classList.add("drag"); }));
       ["dragleave", "drop"].forEach((name) => dropzone.addEventListener(name, (e) => { e.preventDefault(); dropzone.classList.remove("drag"); }));
-      dropzone.addEventListener("drop", (e) => { const file = e.dataTransfer.files[0]; fileInput.files = e.dataTransfer.files; onFile(file); });
+      dropzone.addEventListener("drop", (e) => {
+        const file = e.dataTransfer.files[0];
+        if (file) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          fileInput.files = dt.files;
+        }
+        onFile(file);
+      });
     }
 
     function connectWebsocket() {
@@ -276,6 +498,7 @@
     wireDragDrop();
     updateClock();
     setInterval(updateClock, 1000);
+    setInterval(() => { refreshStats().catch(() => {}); }, 10000);
     refreshDashboard();
     connectWebsocket();
   </script>
