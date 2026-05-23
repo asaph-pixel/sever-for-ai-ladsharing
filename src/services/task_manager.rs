@@ -14,7 +14,7 @@ use uuid::Uuid;
 use crate::models::tasks::{
     ApiKey, CreateTaskRequest, HeartbeatRequest, LoginRequest, LoginResponse, StatusResponse,
     SubmitResultRequest, Task, TaskFilterQuery, TaskListResponse, TaskPriority, TaskStatus,
-    WaitlistRequest,
+    WaitlistEntry, WaitlistRequest,
 };
 
 const BETA_USER_LIMIT: usize = 4;
@@ -39,7 +39,7 @@ struct TaskState {
     auth_tokens: HashMap<String, String>,
     api_keys: HashMap<String, Vec<ApiKey>>,
     task_rate_window: HashMap<String, Vec<u128>>,
-    waitlist: Vec<WaitlistRequest>,
+    waitlist: Vec<WaitlistEntry>,
 }
 
 impl TaskStore {
@@ -514,6 +514,12 @@ impl TaskStore {
         None
     }
 
+    pub fn is_admin_user(&self, user_id: &str) -> bool {
+        std::env::var("ZEPHOST_ADMIN_USERNAME")
+            .map(|admin| admin.trim().eq(user_id))
+            .unwrap_or(false)
+    }
+
     pub async fn join_waitlist(&self, request: WaitlistRequest) -> Result<(), String> {
         if request.email.trim().is_empty() || !request.email.contains('@') {
             return Err("a valid email is required".to_string());
@@ -534,8 +540,37 @@ impl TaskStore {
             return Ok(());
         }
         let mut state = self.state.lock().await;
-        state.waitlist.push(request);
+        state.waitlist.push(WaitlistEntry {
+            email: request.email.trim().to_string(),
+            name: clean_optional(request.name),
+            use_case: clean_optional(request.use_case),
+            created_at_ms: now_ms(),
+        });
         Ok(())
+    }
+
+    pub async fn list_waitlist(&self) -> Vec<WaitlistEntry> {
+        if let Some(db) = &self.db {
+            let rows = sqlx::query(
+                "select email, name, use_case, created_at_ms from waitlist order by created_at_ms desc",
+            )
+            .fetch_all(db)
+            .await
+            .unwrap_or_default();
+            return rows
+                .into_iter()
+                .map(|row| WaitlistEntry {
+                    email: row.get("email"),
+                    name: row.get("name"),
+                    use_case: row.get("use_case"),
+                    created_at_ms: row.get::<i64, _>("created_at_ms") as u128,
+                })
+                .collect();
+        }
+        let state = self.state.lock().await;
+        let mut items = state.waitlist.clone();
+        items.sort_by(|a, b| b.created_at_ms.cmp(&a.created_at_ms));
+        items
     }
 
     pub fn subscribe_events(&self) -> broadcast::Receiver<String> {

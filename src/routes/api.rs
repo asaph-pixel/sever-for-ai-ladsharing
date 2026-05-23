@@ -6,7 +6,8 @@ use actix_web_actors::ws;
 
 use crate::models::tasks::{
     ApiError, CreateApiKeyRequest, CreateTaskRequest, FetchTaskResponse, HeartbeatRequest,
-    LoginRequest, SubmitResultRequest, TaskFilterQuery, WaitlistRequest, WaitlistResponse,
+    LoginRequest, SubmitResultRequest, TaskFilterQuery, WaitlistListResponse, WaitlistRequest,
+    WaitlistResponse,
 };
 use crate::services::task_manager::TaskStore;
 
@@ -22,6 +23,7 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
         .service(login)
         .service(create_api_key)
         .service(join_waitlist)
+        .service(list_waitlist_admin)
         .service(export_tasks)
         .service(ws_updates);
 }
@@ -176,6 +178,33 @@ async fn join_waitlist(
         }),
         Err(error) => HttpResponse::BadRequest().json(ApiError { error }),
     }
+}
+
+#[get("/admin/waitlist")]
+async fn list_waitlist_admin(
+    task_store: web::Data<TaskStore>,
+    request_head: HttpRequest,
+) -> impl Responder {
+    let token = match bearer_token(&request_head) {
+        Some(token) => token,
+        None => {
+            return HttpResponse::Unauthorized().json(ApiError {
+                error: "authorization token required".to_string(),
+            })
+        }
+    };
+    let Some(user_id) = task_store.user_for_access(Some(&token), None).await else {
+        return HttpResponse::Unauthorized().json(ApiError {
+            error: "unauthorized".to_string(),
+        });
+    };
+    if !task_store.is_admin_user(&user_id) {
+        return HttpResponse::Forbidden().json(ApiError {
+            error: "admin access required".to_string(),
+        });
+    }
+    let items = task_store.list_waitlist().await;
+    HttpResponse::Ok().json(WaitlistListResponse { items })
 }
 
 #[get("/tasks/export")]

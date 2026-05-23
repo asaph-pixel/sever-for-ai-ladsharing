@@ -77,6 +77,14 @@ When `DATABASE_URL` is present, Zephost creates the PostgreSQL tables it needs f
 
 The worker polls `/task`, runs `ai_inference` jobs through an Ollama-compatible local API, then submits success or failure plus a reason to `/result`.
 
+## Admin
+
+Set `ZEPHOST_ADMIN_USERNAME` and `ZEPHOST_ADMIN_PASSWORD` to seed the first operator account, then use that account to access:
+
+```text
+GET /admin/waitlist
+```
+
 Render should run the backend with:
 
 ```bash

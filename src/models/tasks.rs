@@ -101,6 +101,19 @@ pub struct WaitlistResponse {
     pub message: String,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct WaitlistEntry {
+    pub email: String,
+    pub name: Option<String>,
+    pub use_case: Option<String>,
+    pub created_at_ms: u128,
+}
+
+#[derive(Serialize)]
+pub struct WaitlistListResponse {
+    pub items: Vec<WaitlistEntry>,
+}
+
 #[derive(Serialize)]
 pub struct TaskListResponse {
     pub items: Vec<Task>,
