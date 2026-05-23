@@ -6,7 +6,7 @@ use actix_web_actors::ws;
 
 use crate::models::tasks::{
     ApiError, CreateApiKeyRequest, CreateTaskRequest, FetchTaskResponse, HeartbeatRequest,
-    LoginRequest, SubmitResultRequest, TaskFilterQuery,
+    LoginRequest, SubmitResultRequest, TaskFilterQuery, WaitlistRequest, WaitlistResponse,
 };
 use crate::services::task_manager::TaskStore;
 
@@ -21,6 +21,7 @@ pub fn init_routes(cfg: &mut web::ServiceConfig) {
         .service(list_tasks)
         .service(login)
         .service(create_api_key)
+        .service(join_waitlist)
         .service(export_tasks)
         .service(ws_updates);
 }
@@ -45,13 +46,13 @@ async fn create_task(
         .headers()
         .get("x-api-key")
         .and_then(|value| value.to_str().ok());
-    if !task_store.verify_api_access(token.as_deref(), api_key).await {
+    let Some(user_id) = task_store.user_for_access(token.as_deref(), api_key).await else {
         return HttpResponse::Unauthorized().json(ApiError {
             error: "login or api key required".to_string(),
         });
-    }
+    };
 
-    match task_store.create_task(request.into_inner()).await {
+    match task_store.create_task(user_id, request.into_inner()).await {
         Ok(task) => HttpResponse::Created().json(task),
         Err(error) => HttpResponse::BadRequest().json(ApiError { error }),
     }
@@ -68,13 +69,13 @@ async fn create_task_upload(
         .headers()
         .get("x-api-key")
         .and_then(|value| value.to_str().ok());
-    if !task_store.verify_api_access(token.as_deref(), api_key).await {
+    let Some(user_id) = task_store.user_for_access(token.as_deref(), api_key).await else {
         return HttpResponse::Unauthorized().json(ApiError {
             error: "login or api key required".to_string(),
         });
-    }
+    };
 
-    match task_store.create_task(request.into_inner()).await {
+    match task_store.create_task(user_id, request.into_inner()).await {
         Ok(task) => HttpResponse::Created().json(task),
         Err(error) => HttpResponse::BadRequest().json(ApiError { error }),
     }
@@ -123,12 +124,18 @@ async fn status(task_store: web::Data<TaskStore>) -> impl Responder {
 }
 
 #[get("/tasks")]
-async fn list_tasks(task_store: web::Data<TaskStore>, query: web::Query<TaskFilterQuery>) -> impl Responder {
+async fn list_tasks(
+    task_store: web::Data<TaskStore>,
+    query: web::Query<TaskFilterQuery>,
+) -> impl Responder {
     HttpResponse::Ok().json(task_store.list_tasks(query.into_inner()).await)
 }
 
 #[post("/auth/login")]
-async fn login(task_store: web::Data<TaskStore>, request: web::Json<LoginRequest>) -> impl Responder {
+async fn login(
+    task_store: web::Data<TaskStore>,
+    request: web::Json<LoginRequest>,
+) -> impl Responder {
     match task_store.login(request.into_inner()).await {
         Ok(response) => HttpResponse::Ok().json(response),
         Err(error) => HttpResponse::Unauthorized().json(ApiError { error }),
@@ -149,14 +156,33 @@ async fn create_api_key(
             })
         }
     };
-    match task_store.create_api_key(&token, request.label.clone()).await {
+    match task_store
+        .create_api_key(&token, request.label.clone())
+        .await
+    {
         Ok(api_key) => HttpResponse::Created().json(api_key),
         Err(error) => HttpResponse::Unauthorized().json(ApiError { error }),
     }
 }
 
+#[post("/waitlist")]
+async fn join_waitlist(
+    task_store: web::Data<TaskStore>,
+    request: web::Json<WaitlistRequest>,
+) -> impl Responder {
+    match task_store.join_waitlist(request.into_inner()).await {
+        Ok(()) => HttpResponse::Created().json(WaitlistResponse {
+            message: "You're on the Zephost access list.".to_string(),
+        }),
+        Err(error) => HttpResponse::BadRequest().json(ApiError { error }),
+    }
+}
+
 #[get("/tasks/export")]
-async fn export_tasks(task_store: web::Data<TaskStore>, query: web::Query<TaskFilterQuery>) -> impl Responder {
+async fn export_tasks(
+    task_store: web::Data<TaskStore>,
+    query: web::Query<TaskFilterQuery>,
+) -> impl Responder {
     let query = query.into_inner();
     if query.format.as_deref() == Some("csv") {
         let csv = task_store.export_tasks_csv(query).await;

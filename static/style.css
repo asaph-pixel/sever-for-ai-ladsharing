@@ -167,6 +167,17 @@ body {
   gap: 0.75rem;
   align-items: center;
 }
+.hero-waitlist {
+  width: min(100%, 620px);
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.2fr) auto;
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 0.5rem;
+}
+.hero-waitlist .submit-feedback {
+  grid-column: 1 / -1;
+}
 .btn-hero-primary {
   padding: 0.75rem 1.35rem;
   border-radius: 999px;
@@ -181,6 +192,11 @@ body {
   transition: transform 0.15s, box-shadow 0.15s;
 }
 .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5), 0 16px 48px -12px rgba(56, 189, 248, 0.55); }
+.btn-hero-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .btn-hero-secondary {
   padding: 0.75rem 1.25rem;
@@ -212,6 +228,7 @@ body {
 .hero-metric span { font-size: 0.75rem; color: var(--text-3); }
 
 @media (max-width: 520px) {
+  .hero-waitlist { grid-template-columns: 1fr; }
   .hero-metrics { grid-template-columns: 1fr; }
 }
 
@@ -395,6 +412,46 @@ body {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.login-panel {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1.5rem 2.5rem;
+}
+
+.login-card {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.login-hint {
+  font-size: 0.875rem;
+  color: var(--text-2);
+  line-height: 1.45;
+}
+
+.login-feedback {
+  margin: 0;
+}
+
+.dashboard-user {
+  font-size: 0.78rem;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-logout {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.85rem;
 }
 
 .status-pill {

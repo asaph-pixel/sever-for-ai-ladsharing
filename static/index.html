@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zephost — Distributed task queue for builders</title>
+  <title>Zephost - Invite-only AI job hosting</title>
+  <meta name="description" content="Zephost is an invite-only job queue for laptop-backed AI inference and worker workloads with live status, logs, and webhooks.">
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="Zephost - Invite-only AI job hosting">
+  <meta property="og:description" content="Queue AI inference jobs, run workers, and track success or failure from one lightweight control plane.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="./og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -19,29 +26,32 @@
       <div class="nav-links">
         <a href="#features">Features</a>
         <a href="#trust">Trust</a>
-        <a href="#pricing">Pricing</a>
+        <a href="#waitlist">Apply</a>
         <a href="#dashboard">Dashboard</a>
+        <a href="#dashboard" id="nav-signin">Sign in</a>
       </div>
-      <a class="btn-nav-cta" href="#dashboard">Open console</a>
+      <a class="btn-nav-cta" href="#waitlist" id="nav-console-cta">Apply for access</a>
     </nav>
   </header>
 
   <section class="hero">
     <div class="hero-inner">
-      <p class="hero-eyebrow"><span>Beta</span> 4 concurrent sessions · fair queue</p>
-      <h1 class="hero-title">Host-grade task queue for your next workload.</h1>
+      <p class="hero-eyebrow"><span>Invite-only alpha</span> laptop AI inference queue</p>
+      <h1 class="hero-title">Run real AI jobs on trusted worker machines.</h1>
       <p class="hero-lead">
-        Zephost is a lightweight control plane to queue render, encode, and inference-style jobs with live status,
-        webhooks, and exports—without running your own orchestrator.
+        Zephost is a lightweight control plane for queueing inference jobs, tracking worker output,
+        and logging success or failure without building your own orchestrator.
       </p>
-      <div class="hero-actions">
-        <a class="btn-hero-primary" href="#dashboard">Start queuing work</a>
-        <a class="btn-hero-secondary" href="#pricing">View plans</a>
-      </div>
+      <form class="waitlist-form hero-waitlist" id="waitlist" aria-label="Apply for Zephost access">
+        <div class="field"><label for="waitlist-email">Work email</label><input id="waitlist-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required></div>
+        <div class="field"><label for="waitlist-use-case">What will you run?</label><input id="waitlist-use-case" name="use_case" placeholder="AI inference, batch jobs, media processing"></div>
+        <button class="btn-hero-primary" id="waitlist-submit" type="submit">Apply for access</button>
+        <p class="submit-feedback" id="waitlist-feedback" role="status"></p>
+      </form>
       <div class="hero-metrics" aria-hidden="true">
-        <div class="hero-metric"><strong>Real-time</strong><span>WebSocket + status API</span></div>
-        <div class="hero-metric"><strong>Fair beta</strong><span>Session &amp; rate limits</span></div>
-        <div class="hero-metric"><strong>Portable</strong><span>JSON / CSV export</span></div>
+        <div class="hero-metric"><strong>Real jobs</strong><span>Ollama-ready workers</span></div>
+        <div class="hero-metric"><strong>Fair alpha</strong><span>Session &amp; rate limits</span></div>
+        <div class="hero-metric"><strong>Logged</strong><span>Success / fail reasons</span></div>
       </div>
     </div>
   </section>
@@ -50,24 +60,24 @@
     <div class="section-head">
       <p class="section-kicker">Features</p>
       <h2 class="section-title">Everything you need to ship a worker-backed product</h2>
-      <p class="section-desc">Same capabilities you already use in the console—presented for visitors and power users alike.</p>
+      <p class="section-desc">Same capabilities you already use in the console, tuned for controlled alpha access.</p>
     </div>
     <div class="features-grid">
       <div class="feature-card">
-        <h3>Drag-and-drop uploads</h3>
-        <p>Attach real files; we capture metadata and queue a job with priority and quality presets.</p>
+        <h3>Inference jobs</h3>
+        <p>Submit prompts and payloads to a worker process that can call local laptop AI models.</p>
       </div>
       <div class="feature-card">
         <h3>Live queue &amp; ETA</h3>
         <p>See queued and running work with estimated completion so users know what to expect.</p>
       </div>
       <div class="feature-card">
-        <h3>Webhooks &amp; exports</h3>
-        <p>Optional per-task webhook URL plus one-click JSON or CSV export for your pipelines.</p>
+        <h3>Logs, webhooks &amp; exports</h3>
+        <p>Per-task result payloads, success or failure reasons, optional webhooks, and JSON or CSV export.</p>
       </div>
       <div class="feature-card">
-        <h3>Auth-ready</h3>
-        <p>Session heartbeat for beta fairness, bearer login, and API keys for integrations.</p>
+        <h3>Invite-only access</h3>
+        <p>Bearer login and API keys are available to approved operators during the alpha.</p>
       </div>
     </div>
   </section>
@@ -107,7 +117,7 @@
     <div class="section-head">
       <p class="section-kicker">Pricing</p>
       <h2 class="section-title">Simple tiers. Upgrade when you outgrow the beta.</h2>
-      <p class="section-desc">Transparent packaging inspired by modern cloud dashboards—pick what matches your stage.</p>
+      <p class="section-desc">Public sign-up is closed while Zephost proves the worker loop with early users.</p>
     </div>
     <div class="pricing-grid">
       <div class="price-card">
@@ -118,7 +128,7 @@
           <li>Queue, cancel, and export</li>
           <li>Community webhook support</li>
         </ul>
-        <a class="btn-price" href="#dashboard">Use beta</a>
+        <a class="btn-price" href="#waitlist">Apply</a>
       </div>
       <div class="price-card featured">
         <span class="badge">Popular</span>
@@ -129,7 +139,7 @@
           <li>Priority routing</li>
           <li>Email support SLA (target)</li>
         </ul>
-        <a class="btn-price" href="#dashboard">Join waitlist</a>
+        <a class="btn-price" href="#waitlist">Join waitlist</a>
       </div>
       <div class="price-card">
         <h3>Enterprise</h3>
@@ -139,7 +149,7 @@
           <li>SSO &amp; audit trails</li>
           <li>Dedicated solutions engineer</li>
         </ul>
-        <a class="btn-price" href="#dashboard">Talk to us</a>
+        <a class="btn-price" href="#waitlist">Request access</a>
       </div>
     </div>
   </section>
@@ -151,9 +161,26 @@
       <p class="section-desc">Create tasks, watch the queue, and pull structured output—the same workflow as before, now in a focused layout.</p>
     </div>
 
+    <div id="login-panel" class="login-panel">
+      <div class="card login-card">
+        <div class="card-label">Access</div>
+        <h2 class="card-title">Sign in to the console</h2>
+        <p class="login-hint">Use the Zephost credentials issued with your invite. Public sign-up is closed during this alpha.</p>
+        <form id="login-form">
+          <div class="field"><label for="login-username">Username</label><input id="login-username" name="username" autocomplete="username" required placeholder="you"></div>
+          <div class="field"><label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" required placeholder="••••••••"></div>
+          <p class="submit-feedback error login-feedback hidden" id="login-feedback" role="alert"></p>
+          <button class="btn-primary" id="login-submit" type="submit"><span id="login-submit-label">Sign in</span><span id="login-spinner" class="spinner hidden" aria-hidden="true"></span></button>
+        </form>
+      </div>
+    </div>
+
+    <div id="dashboard-workspace" class="dashboard-workspace hidden">
     <div class="dashboard-topbar">
       <div class="dashboard-brand"><strong>Zephost</strong> <span>· 4-user beta</span></div>
       <div class="dashboard-topbar-right">
+        <span class="dashboard-user hidden" id="dashboard-user" title="Signed-in user"></span>
+        <button type="button" class="btn-ghost btn-logout hidden" id="logout-button">Sign out</button>
         <span class="status-pill live" id="system-pill">checking backend</span>
         <span class="time" id="clock"></span>
       </div>
@@ -218,7 +245,7 @@
         <div class="field-row">
           <div class="field"><label for="filter-status">Filter status</label>
             <select id="filter-status">
-              <option value="">all</option><option value="queued">queued</option><option value="running">running</option><option value="completed">completed</option><option value="cancelled">cancelled</option>
+              <option value="">all</option><option value="queued">queued</option><option value="running">running</option><option value="completed">completed</option><option value="failed">failed</option><option value="cancelled">cancelled</option>
             </select>
           </div>
           <div class="field"><label for="filter-user">Filter user</label><input id="filter-user" placeholder="demo"></div>
@@ -233,6 +260,7 @@
         </div>
       </section>
     </main>
+    </div>
   </section>
 
   <footer class="site-footer">
@@ -244,10 +272,71 @@
 
   <script>
     const API_BASE_URL = (window.ZEPHOST_API_BASE_URL || "https://sever-for-ai-ladsharing-1.onrender.com").replace(/\/$/, "");
-    const state = { token: localStorage.getItem("zephost_token") || "", completedPage: 1, completedPerPage: 10 };
+    const state = {
+      token: localStorage.getItem("zephost_token") || "",
+      username: localStorage.getItem("zephost_username") || "",
+      completedPage: 1,
+      completedPerPage: 10
+    };
     const apiUrl = (path) => `${API_BASE_URL}/${path.replace(/^\/+/, "")}`;
     const showToast = (message, type = "success") => { const c = document.getElementById("toast-container"); const t = document.createElement("div"); t.className = `toast ${type}`; t.textContent = message; c.appendChild(t); setTimeout(() => t.remove(), 3200); };
     const authHeaders = () => { const headers = { "Content-Type": "application/json" }; if (state.token) headers.Authorization = `Bearer ${state.token}`; return headers; };
+    async function fetchWithTimeout(url, options = {}, ms = 5000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } catch (error) {
+        if (error.name === "AbortError") {
+          throw new Error("Backend is offline or waking up. Try again in a moment.");
+        }
+        throw error;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function syncAuthUI() {
+      const loggedIn = Boolean(state.token);
+      document.getElementById("login-panel").classList.toggle("hidden", loggedIn);
+      document.getElementById("dashboard-workspace").classList.toggle("hidden", !loggedIn);
+      document.getElementById("logout-button").classList.toggle("hidden", !loggedIn);
+      document.getElementById("dashboard-user").classList.toggle("hidden", !loggedIn);
+      const navSignin = document.getElementById("nav-signin");
+      if (navSignin) navSignin.textContent = loggedIn ? "Console" : "Sign in";
+      const u = document.getElementById("dashboard-user");
+      if (loggedIn && state.username) u.textContent = state.username;
+    }
+
+    function clearSession() {
+      state.token = "";
+      state.username = "";
+      localStorage.removeItem("zephost_token");
+      localStorage.removeItem("zephost_username");
+      syncAuthUI();
+    }
+
+    async function fetchWithAuth(url, options = {}) {
+      const headers = { ...authHeaders(), ...(options.headers || {}) };
+      const res = await fetchWithTimeout(url, { ...options, headers });
+      if (res.status === 401) {
+        clearSession();
+        showToast("Session expired. Sign in again.", "error");
+        const err = new Error("Unauthorized");
+        err.code = 401;
+        throw err;
+      }
+      return res;
+    }
+
+    const setLoginSubmitting = (on) => {
+      const btn = document.getElementById("login-submit");
+      const spin = document.getElementById("login-spinner");
+      const lab = document.getElementById("login-submit-label");
+      btn.disabled = on;
+      spin.classList.toggle("hidden", !on);
+      lab.textContent = on ? "Signing in…" : "Sign in";
+    };
     const setSubmitting = (on) => { document.getElementById("submit-button").disabled = on; document.getElementById("submit-spinner").classList.toggle("hidden", !on); document.getElementById("submit-label").textContent = on ? "Creating…" : "Create Task"; };
     const normalizeStatus = (v) => String(v || "queued").toLowerCase();
     const remainingEtaMs = (task) => !task.estimated_completion_ms ? 0 : Math.max(0, Number(task.estimated_completion_ms) - Date.now());
@@ -269,18 +358,13 @@
     }
 
     async function ensureSession() {
-      if (state.token) return;
-      const res = await fetch(apiUrl("auth/login"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: "demo", password: "demo" }) });
-      if (!res.ok) throw new Error("unable to initialize session");
-      const body = await res.json();
-      state.token = body.token;
-      localStorage.setItem("zephost_token", state.token);
+      if (!state.token) throw new Error("Sign in to use the console.");
     }
 
     async function refreshStats() {
       let summary = null;
       try {
-        const hbRes = await fetch(apiUrl("heartbeat"), {
+        const hbRes = await fetchWithTimeout(apiUrl("heartbeat"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ session_id: getSessionId() })
@@ -288,7 +372,7 @@
         if (hbRes.ok) summary = await hbRes.json();
       } catch (_) { /* ignore */ }
       if (!summary) {
-        const res = await fetch(apiUrl("status"));
+        const res = await fetchWithTimeout(apiUrl("status"));
         summary = await res.json();
       }
       const limit = summary.beta_user_limit ?? 4;
@@ -319,6 +403,7 @@
     function resultBadgeHtml(task) {
       const s = normalizeStatus(task.status);
       if (s === "completed") return '<span class="result-badge success">Completed</span>';
+      if (s === "failed") return '<span class="result-badge error">Failed</span>';
       if (s === "cancelled") return '<span class="result-badge muted">Cancelled</span>';
       if (s === "running") return '<span class="result-badge pending">Running</span>';
       if (s === "queued") return '<span class="result-badge pending">Queued</span>';
@@ -335,6 +420,7 @@
         file_name: task.file_name,
         quality: task.quality,
         priority: task.priority,
+        failure_reason: task.failure_reason || null,
         note: s === "cancelled" ? "Task was cancelled before a worker result was recorded." : "No worker result payload yet for this task."
       }, null, 2);
     }
@@ -362,6 +448,7 @@
     }
 
     async function refreshDashboard(options = {}) {
+      if (!state.token) return;
       const isManual = Boolean(options.manual);
       const statusFilter = document.getElementById("filter-status").value;
       const userFilter = document.getElementById("filter-user").value.trim();
@@ -370,13 +457,13 @@
       try {
         await ensureSession();
         await refreshStats();
-        const allRes = await fetch(apiUrl(`tasks?per_page=200&page=1${userFilter ? `&user_id=${encodeURIComponent(userFilter)}` : ""}`), { headers: authHeaders() });
+        const allRes = await fetchWithAuth(apiUrl(`tasks?per_page=200&page=1${userFilter ? `&user_id=${encodeURIComponent(userFilter)}` : ""}`));
         const allBody = await allRes.json();
         renderQueue(allBody.items || []);
 
         let listUrl = apiUrl(`tasks?page=${state.completedPage}&per_page=${state.completedPerPage}${userFilter ? `&user_id=${encodeURIComponent(userFilter)}` : ""}`);
         if (statusFilter) listUrl += `&status=${encodeURIComponent(statusFilter)}`;
-        const doneRes = await fetch(listUrl, { headers: authHeaders() });
+        const doneRes = await fetchWithAuth(listUrl);
         const doneBody = await doneRes.json();
         renderCompleted(doneBody.items || [], doneBody.total || 0, doneBody.page || 1, doneBody.per_page || state.completedPerPage);
       } catch (error) {
@@ -397,11 +484,9 @@
       setSubmitting(true);
       try {
         await ensureSession();
-        const response = await fetch(apiUrl("tasks"), {
+        const response = await fetchWithAuth(apiUrl("tasks"), {
           method: "POST",
-          headers: authHeaders(),
           body: JSON.stringify({
-            user_id: "demo",
             file_name: fileName,
             quality: document.getElementById("quality").value,
             priority: document.getElementById("priority").value,
@@ -429,7 +514,7 @@
     async function cancelTask(taskId) {
       try {
         await ensureSession();
-        const response = await fetch(apiUrl(`tasks/${taskId}/cancel`), { method: "POST", headers: authHeaders() });
+        const response = await fetchWithAuth(apiUrl(`tasks/${taskId}/cancel`), { method: "POST" });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(payload.error || "Cancel failed");
         showToast(`Task #${taskId} cancelled`, "success");
@@ -474,10 +559,10 @@
       const wsBase = API_BASE_URL.replace(/^http/, "ws");
       try {
         const socket = new WebSocket(`${wsBase}/ws`);
-        socket.onmessage = () => refreshDashboard();
-        socket.onclose = () => setTimeout(connectWebsocket, 2000);
+        socket.onmessage = () => { if (state.token) refreshDashboard(); };
+        socket.onclose = () => { if (state.token) setTimeout(connectWebsocket, 2000); };
       } catch {
-        setInterval(refreshDashboard, 3000);
+        setInterval(() => { if (state.token) refreshDashboard(); }, 3000);
       }
     }
 
@@ -488,6 +573,74 @@
       window.open(apiUrl(`tasks/export?${query}`), "_blank");
     }
 
+    document.getElementById("waitlist").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const feedback = document.getElementById("waitlist-feedback");
+      const button = document.getElementById("waitlist-submit");
+      feedback.textContent = "";
+      feedback.className = "submit-feedback pending";
+      button.disabled = true;
+      try {
+        const res = await fetchWithTimeout(apiUrl("waitlist"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: document.getElementById("waitlist-email").value.trim(),
+            use_case: document.getElementById("waitlist-use-case").value.trim() || null
+          })
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error || "Could not join the waitlist.");
+        feedback.textContent = body.message || "You're on the access list.";
+        feedback.className = "submit-feedback success";
+        showToast("Application received", "success");
+        e.target.reset();
+      } catch (error) {
+        feedback.textContent = error.message || "Could not join the waitlist.";
+        feedback.className = "submit-feedback error";
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const feedback = document.getElementById("login-feedback");
+      feedback.textContent = "";
+      feedback.classList.add("hidden");
+      const username = document.getElementById("login-username").value.trim();
+      const password = document.getElementById("login-password").value;
+      if (!username || !password) return;
+      setLoginSubmitting(true);
+      try {
+        const res = await fetchWithTimeout(apiUrl("auth/login"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.error || "Sign in failed.");
+        state.token = body.token;
+        state.username = username;
+        localStorage.setItem("zephost_token", state.token);
+        localStorage.setItem("zephost_username", state.username);
+        syncAuthUI();
+        document.getElementById("filter-user").value = username;
+        document.getElementById("login-password").value = "";
+        await refreshDashboard();
+        showToast("Signed in", "success");
+      } catch (err) {
+        feedback.textContent = err.message || "Sign in failed.";
+        feedback.classList.remove("hidden");
+      } finally {
+        setLoginSubmitting(false);
+      }
+    });
+    document.getElementById("logout-button").addEventListener("click", () => {
+      clearSession();
+      document.getElementById("submit-feedback").textContent = "";
+      showToast("Signed out", "success");
+    });
     document.getElementById("create-task-form").addEventListener("submit", submitTask);
     document.getElementById("prev-page").addEventListener("click", () => { state.completedPage = Math.max(1, state.completedPage - 1); refreshDashboard(); });
     document.getElementById("next-page").addEventListener("click", () => { state.completedPage += 1; refreshDashboard(); });
@@ -496,10 +649,11 @@
     document.getElementById("export-json").addEventListener("click", () => downloadExport("json"));
     document.getElementById("export-csv").addEventListener("click", () => downloadExport("csv"));
     wireDragDrop();
+    syncAuthUI();
     updateClock();
     setInterval(updateClock, 1000);
     setInterval(() => { refreshStats().catch(() => {}); }, 10000);
-    refreshDashboard();
+    if (state.token) refreshDashboard();
     connectWebsocket();
   </script>
 </body>

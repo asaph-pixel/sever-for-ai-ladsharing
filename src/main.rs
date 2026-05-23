@@ -42,7 +42,9 @@ async fn not_found() -> HttpResponse {
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
-    let task_store = TaskStore::new();
+    let task_store = TaskStore::new()
+        .await
+        .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
     let cors_origin = std::env::var("CORS_ALLOWED_ORIGIN").unwrap_or_else(|_| "*".to_string());
     let bind_host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
     let bind_port = std::env::var("PORT")

@@ -7,6 +7,7 @@ pub enum TaskStatus {
     Queued,
     Running,
     Completed,
+    Failed,
     Cancelled,
 }
 
@@ -49,6 +50,8 @@ pub struct CreateApiKeyRequest {
 pub struct SubmitResultRequest {
     pub task_id: u64,
     pub result: Value,
+    pub success: Option<bool>,
+    pub reason: Option<String>,
 }
 
 #[derive(Clone, Deserialize)]
@@ -66,6 +69,7 @@ pub struct Task {
     pub payload: Value,
     pub status: TaskStatus,
     pub result: Option<Value>,
+    pub failure_reason: Option<String>,
     pub webhook_url: Option<String>,
     pub created_at_ms: u128,
     pub started_at_ms: Option<u128>,
@@ -83,6 +87,18 @@ pub struct ApiKey {
     pub key: String,
     pub label: String,
     pub created_at_ms: u128,
+}
+
+#[derive(Clone, Deserialize)]
+pub struct WaitlistRequest {
+    pub name: Option<String>,
+    pub email: String,
+    pub use_case: Option<String>,
+}
+
+#[derive(Serialize)]
+pub struct WaitlistResponse {
+    pub message: String,
 }
 
 #[derive(Serialize)]

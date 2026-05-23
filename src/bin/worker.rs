@@ -3,7 +3,7 @@ use std::time::Duration;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use tokio::time::sleep;
+use tokio::time::{sleep, timeout};
 
 const DEFAULT_API_BASE_URL: &str = "https://sever-for-ai-ladsharing-1.onrender.com";
 
@@ -24,6 +24,8 @@ struct Task {
 struct ResultRequest {
     task_id: u64,
     result: Value,
+    success: bool,
+    reason: Option<String>,
 }
 
 #[tokio::main]
@@ -44,25 +46,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .await?;
 
         if let Some(task) = response.task {
-            let sleep_secs = 2 + (task.id % 4);
             println!(
                 "worker picked task #{} ({}, {})",
                 task.id, task.file_name, task.quality
             );
-            sleep(Duration::from_secs(sleep_secs)).await;
 
-            let result = ResultRequest {
+            let result = run_task(&client, &task).await;
+            let request = ResultRequest {
                 task_id: task.id,
-                result: json!({
-                    "message": format!("processed {} at {} quality", task.file_name, task.quality),
-                    "simulated_seconds": sleep_secs,
-                    "input": task.payload
-                }),
+                success: result.is_ok(),
+                reason: result.as_ref().err().cloned(),
+                result: result.unwrap_or_else(|reason| json!({ "error": reason })),
             };
 
             client
                 .post(format!("{api_base_url}/result"))
-                .json(&result)
+                .json(&request)
                 .send()
                 .await?
                 .error_for_status()?;
@@ -72,4 +71,68 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             sleep(Duration::from_secs(2)).await;
         }
     }
+}
+
+async fn run_task(client: &Client, task: &Task) -> Result<Value, String> {
+    let job_type = task
+        .payload
+        .get("job_type")
+        .or_else(|| task.payload.get("type"))
+        .and_then(Value::as_str)
+        .unwrap_or("ai_inference");
+
+    match job_type {
+        "ai_inference" | "inference" => run_ai_inference(client, task).await,
+        other => Err(format!("unsupported job type: {other}")),
+    }
+}
+
+async fn run_ai_inference(client: &Client, task: &Task) -> Result<Value, String> {
+    let ollama_url = std::env::var("OLLAMA_URL")
+        .unwrap_or_else(|_| "http://127.0.0.1:11434".to_string())
+        .trim_end_matches('/')
+        .to_string();
+    let model = task
+        .payload
+        .get("model")
+        .and_then(Value::as_str)
+        .unwrap_or("llama3.2");
+    let prompt = task
+        .payload
+        .get("prompt")
+        .and_then(Value::as_str)
+        .or_else(|| task.payload.get("input").and_then(Value::as_str))
+        .unwrap_or("Summarize what Zephost should do next in one sentence.");
+
+    let response = timeout(
+        Duration::from_secs(120),
+        client
+            .post(format!("{ollama_url}/api/generate"))
+            .json(&json!({
+                "model": model,
+                "prompt": prompt,
+                "stream": false
+            }))
+            .send(),
+    )
+    .await
+    .map_err(|_| "local inference timed out after 120 seconds".to_string())?
+    .map_err(|error| format!("local inference request failed: {error}"))?;
+
+    let status = response.status();
+    let body = response
+        .json::<Value>()
+        .await
+        .map_err(|error| format!("could not parse local inference response: {error}"))?;
+    if !status.is_success() {
+        return Err(format!("local inference failed with {status}: {body}"));
+    }
+
+    Ok(json!({
+        "job_type": "ai_inference",
+        "model": model,
+        "prompt": prompt,
+        "response": body.get("response").cloned().unwrap_or(body),
+        "input": task.payload
+    }))
 }

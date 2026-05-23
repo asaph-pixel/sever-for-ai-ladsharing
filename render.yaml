@@ -10,3 +10,11 @@ services:
         value: 0.0.0.0
       - key: CORS_ALLOWED_ORIGIN
         value: "*"
+      - key: ALLOW_PUBLIC_SIGNUP
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: ZEPHOST_ADMIN_USERNAME
+        sync: false
+      - key: ZEPHOST_ADMIN_PASSWORD
+        sync: false

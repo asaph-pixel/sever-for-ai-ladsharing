@@ -10,16 +10,20 @@ Base URL for the hosted beta:
 https://sever-for-ai-ladsharing-1.onrender.com
 ```
 
-Create a task:
+Create a task after login. The backend now owns `user_id` from the bearer token or API key; clients should not send a trusted user id:
 
 ```js
 await fetch("https://sever-for-ai-ladsharing-1.onrender.com/task", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    user_id: "beta-user-1",
-    task_type: "render",
-    payload: { input: "sample-file.mp4", quality: "beta" }
+    file_name: "prompt.json",
+    quality: "alpha",
+    payload: {
+      job_type: "ai_inference",
+      model: "llama3.2",
+      prompt: "Write a one-line launch checklist for Zephost."
+    }
   })
 });
 ```
@@ -55,8 +59,23 @@ const status = await fetch("https://sever-for-ai-ladsharing-1.onrender.com/statu
 
 ```bash
 cargo run --bin zephost
-cargo run --features worker --bin worker
+cargo run --bin worker
 ```
+
+## Environment
+
+```text
+DATABASE_URL=postgres://...
+ALLOW_PUBLIC_SIGNUP=false
+ZEPHOST_ADMIN_USERNAME=admin
+ZEPHOST_ADMIN_PASSWORD=change-me
+ZEPHOST_API_BASE_URL=http://127.0.0.1:8080
+OLLAMA_URL=http://127.0.0.1:11434
+```
+
+When `DATABASE_URL` is present, Zephost creates the PostgreSQL tables it needs for users, API keys, tasks, job logs, and waitlist entries. Public sign-up is closed unless `ALLOW_PUBLIC_SIGNUP=true`; set `ZEPHOST_ADMIN_USERNAME` and `ZEPHOST_ADMIN_PASSWORD` to seed the first invited operator.
+
+The worker polls `/task`, runs `ai_inference` jobs through an Ollama-compatible local API, then submits success or failure plus a reason to `/result`.
 
 Render should run the backend with:
 
