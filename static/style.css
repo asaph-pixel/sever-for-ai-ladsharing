@@ -14,7 +14,7 @@
   --accent-dim: rgba(56, 189, 248, 0.15);
   --accent-text: #0c4a6e;
   --online: #34d399;
-  --busy: #fbbf24;
+  --busy: hsl(43, 96%, 56%);
   --offline: #64748b;
   --error: #f87171;
   --success: #34d399;
